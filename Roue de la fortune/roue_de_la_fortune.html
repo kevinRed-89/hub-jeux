@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="fr" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lucky Wheel</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+
+    body {
+      box-sizing: border-box;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    .app-wrapper {
+      min-height: 100%;
+      width: 100%;
+      overflow: auto;
+    }
+  </style>
+</head>
+
+<body class="h-full">
+  <div
+    class="app-wrapper flex flex-col items-center justify-start px-4 py-8 gap-6"
+    style="background: linear-gradient(135deg, #0f0c29, #302b63, #24243e); font-family: 'DM Sans', sans-serif;"
+  >
+    <h1
+      id="main-title"
+      class="text-center tracking-wide"
+      style="font-family: 'Fredoka One', cursive; font-size: 42px; color: #f9dc5c; text-shadow: 0 2px 12px rgba(249,220,92,.4);"
+    >
+      Lucky Wheel
+    </h1>
+
+    <button
+      id="toggle-wheel2"
+      class="px-5 py-3 rounded-full text-base font-bold transition-all hover:scale-105"
+      style="background: rgba(249,220,92,0.2); color: #f9dc5c; border: 2px solid #f9dc5c;"
+    >
+      Ajouter roue 2
+    </button>
+
+    <div class="w-full max-w-7xl flex gap-4 justify-center flex-wrap">
+      <div class="flex-1 min-w-[280px] max-w-[700px]">
+        <label for="words-input-1" class="block text-base font-medium mb-2" style="color: #c4b5fd;">
+          Roue 1 - Mots (séparés par des virgules)
+        </label>
+        <textarea
+          id="words-input-1"
+          rows="2"
+          class="w-full rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2"
+          style="background: rgba(255,255,255,0.08); color: #e2e0ff; border: 1px solid rgba(255,255,255,0.12); font-family: 'DM Sans', sans-serif;"
+          placeholder="je, tu, il, elle, on, nous, vous, ils, elles"
+        >je, tu, il, elle, on, nous, vous, ils, elles</textarea>
+      </div>
+
+      <div id="input2-container" class="flex-1 min-w-[280px] max-w-[700px]" style="display: none;">
+        <label for="words-input-2" class="block text-base font-medium mb-2" style="color: #c4b5fd;">
+          Roue 2 - Mots (séparés par des virgules)
+        </label>
+        <textarea
+          id="words-input-2"
+          rows="2"
+          class="w-full rounded-xl px-4 py-3 text-base focus:outline-none focus:ring-2"
+          style="background: rgba(255,255,255,0.08); color: #e2e0ff; border: 1px solid rgba(255,255,255,0.12); font-family: 'DM Sans', sans-serif;"
+          placeholder="jouer, chanter, avoir, être"
+        >jouer, chanter, avoir, être</textarea>
+      </div>
+    </div>
+
+    <div id="wheels-container" class="flex items-center justify-center gap-8 flex-wrap">
+      <div class="relative" style="width: 660px; height: 660px;">
+        <canvas
+          id="wheel-canvas-1"
+          width="660"
+          height="660"
+          style="display: block; cursor: pointer; border-radius: 50%; box-shadow: 0 0 55px rgba(249,220,92,.25);"
+        ></canvas>
+
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none" style="z-index: 10;">
+          <div style="width:62px;height:62px;background:#f9dc5c;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(0,0,0,.4);">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#302b63" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <button
+        id="spin-both-btn"
+        class="flex-shrink-0 transition-all hover:scale-110"
+        style="width: 82px; height: 82px; background: linear-gradient(135deg, #f9dc5c, #ff9e00); border: none; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 20px rgba(249,220,92,.4); display: none; align-items: center; justify-content: center;"
+        aria-label="Faire tourner les deux roues"
+      >
+        <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#302b63" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12a9 9 0 1 1-2.64-6.36"></path>
+          <polyline points="21 3 21 9 15 9"></polyline>
+        </svg>
+      </button>
+
+      <div id="wheel2-container" class="relative" style="width: 660px; height: 660px; display: none;">
+        <canvas
+          id="wheel-canvas-2"
+          width="660"
+          height="660"
+          style="display: block; cursor: pointer; border-radius: 50%; box-shadow: 0 0 55px rgba(249,220,92,.25);"
+        ></canvas>
+
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none" style="z-index: 10;">
+          <div style="width:62px;height:62px;background:#f9dc5c;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(0,0,0,.4);">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#302b63" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="text-sm" style="color: rgba(255,255,255,.45);">
+      Cliquez sur une roue ou sur le bouton central pour tourner
+    </p>
+
+    <div
+      id="result-overlay"
+      class="fixed inset-0 items-center justify-center hidden"
+      style="z-index:100; background:rgba(0,0,0,.65); backdrop-filter:blur(6px);"
+    >
+      <div
+        class="rounded-2xl p-12 text-center mx-4"
+        style="background:linear-gradient(145deg,#302b63,#24243e); border:2px solid rgba(249,220,92,.4); box-shadow:0 0 60px rgba(249,220,92,.2); width:min(1100px, 92vw); min-height:360px; display:flex; flex-direction:column; justify-content:center;"
+      >
+        <div style="font-size:72px; margin-bottom:18px;">🎉</div>
+        <p class="text-2xl mb-6" style="color:#c4b5fd;">Le résultat est…</p>
+
+        <div class="flex gap-6 items-center justify-center mb-8 flex-wrap">
+          <p id="result-text-1" style="font-family:'Fredoka One',cursive; font-size:64px; line-height:1.1; color:#f9dc5c; text-shadow:0 2px 8px rgba(249,220,92,.4);"></p>
+          <p id="separator" style="font-size:48px; color:rgba(255,255,255,.3); display:none;">—</p>
+          <p id="result-text-2" style="font-family:'Fredoka One',cursive; font-size:64px; line-height:1.1; color:#f9dc5c; text-shadow:0 2px 8px rgba(249,220,92,.4);"></p>
+        </div>
+
+        <button
+          id="close-popup"
+          class="mt-2 px-10 py-4 rounded-full text-xl font-bold transition-transform hover:scale-105 self-center"
+          style="background:#f9dc5c; color:#302b63;"
+        >
+          OK
+        </button>
+      </div>
+    </div>
+
+    <script>
+      const COLORS = [
+        '#f9dc5c', '#f25c54', '#70d6ff', '#ff70a6', '#e9ff70', '#9b5de5',
+        '#00f5d4', '#ff9e00', '#ff6b6b', '#48bfe3', '#ffc6ff', '#80ed99'
+      ];
+
+      const canvas1 = document.getElementById('wheel-canvas-1');
+      const ctx1 = canvas1.getContext('2d');
+
+      const canvas2 = document.getElementById('wheel-canvas-2');
+      const ctx2 = canvas2.getContext('2d');
+
+      const textarea1 = document.getElementById('words-input-1');
+      const textarea2 = document.getElementById('words-input-2');
+
+      const overlay = document.getElementById('result-overlay');
+      const spinBothBtn = document.getElementById('spin-both-btn');
+
+      const toggleBtn2 = document.getElementById('toggle-wheel2');
+      const wheel2Container = document.getElementById('wheel2-container');
+      const input2Container = document.getElementById('input2-container');
+
+      let items1 = [];
+      let items2 = [];
+      let rotation1 = 0;
+      let rotation2 = 0;
+      let spinning = false;
+      let wheel2Visible = false;
+
+      function getItems(textarea) {
+        return textarea.value
+          .split(',')
+          .map(s => s.trim())
+          .filter(Boolean);
+      }
+
+      function drawWheel(canvas, ctx, rotation, items) {
+        const cx = canvas.width / 2;
+        const cy = canvas.height / 2;
+        const r = Math.min(canvas.width, canvas.height) / 2 - 18;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const n = items.length;
+
+        if (n === 0) {
+          ctx.fillStyle = 'rgba(255,255,255,0.05)';
+          ctx.beginPath();
+          ctx.arc(cx, cy, r, 0, Math.PI * 2);
+          ctx.fill();
+          return;
+        }
+
+        const slice = (Math.PI * 2) / n;
+
+        for (let i = 0; i < n; i++) {
+          const start = rotation + i * slice - Math.PI / 2;
+          const end = start + slice;
+
+          ctx.beginPath();
+          ctx.moveTo(cx, cy);
+          ctx.arc(cx, cy, r, start, end);
+          ctx.closePath();
+          ctx.fillStyle = COLORS[i % COLORS.length];
+          ctx.fill();
+
+          ctx.strokeStyle = 'rgba(0,0,0,.18)';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.rotate(start + slice / 2);
+
+          ctx.textAlign = 'right';
+          ctx.textBaseline = 'middle';
+          ctx.fillStyle = '#1a1a2e';
+
+          const text = items[i];
+          const fontSize = Math.max(22, Math.min(38, 300 / Math.max(text.length, 1)));
+          ctx.font = `bold ${fontSize}px "DM Sans", sans-serif`;
+
+          ctx.fillText(text, r - 30, 0);
+          ctx.restore();
+        }
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(249,220,92,.55)';
+        ctx.lineWidth = 5;
+        ctx.stroke();
+      }
+
+      function isWheel2Displayed() {
+        return wheel2Container.style.display !== 'none';
+      }
+
+      function updateWheelLayout() {
+        spinBothBtn.style.display = isWheel2Displayed() ? 'flex' : 'none';
+      }
+
+      function getResultIndex(rotation, itemsLength) {
+        const slice = (Math.PI * 2) / itemsLength;
+        const pointerAngle = -Math.PI / 2;
+        const normalizedRotation = ((rotation % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+        const adjusted = ((-pointerAngle - normalizedRotation) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+        return Math.floor(adjusted / slice) % itemsLength;
+      }
+
+      function showOverlay(result1, result2 = '') {
+        document.getElementById('result-text-1').textContent = result1 || '';
+        document.getElementById('result-text-2').textContent = result2 || '';
+
+        const separator = document.getElementById('separator');
+        separator.style.display = result1 && result2 ? 'block' : 'none';
+
+        overlay.classList.remove('hidden');
+        overlay.style.display = 'flex';
+      }
+
+      function spinSingleWheel(wheelNum) {
+        if (spinning) return;
+
+        if (wheelNum === 1) {
+          items1 = getItems(textarea1);
+          if (items1.length < 2) return;
+        }
+
+        if (wheelNum === 2) {
+          if (!isWheel2Displayed()) return;
+          items2 = getItems(textarea2);
+          if (items2.length < 2) return;
+        }
+
+        spinning = true;
+
+        const totalRotation = Math.PI * 2 * (5 + Math.random() * 5);
+        const duration = 4000;
+        const startRotation = wheelNum === 1 ? rotation1 : rotation2;
+        const startTime = performance.now();
+
+        function easeOut(t) {
+          return 1 - Math.pow(1 - t, 3);
+        }
+
+        function animate(now) {
+          const elapsed = now - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          const currentRotation = startRotation + totalRotation * easeOut(progress);
+
+          if (wheelNum === 1) {
+            rotation1 = currentRotation;
+            drawWheel(canvas1, ctx1, rotation1, items1);
+          } else {
+            rotation2 = currentRotation;
+            drawWheel(canvas2, ctx2, rotation2, items2);
+          }
+
+          if (progress < 1) {
+            requestAnimationFrame(animate);
+            return;
+          }
+
+          spinning = false;
+
+          if (wheelNum === 1) {
+            const idx = getResultIndex(rotation1, items1.length);
+            showOverlay(items1[idx]);
+          } else {
+            const idx = getResultIndex(rotation2, items2.length);
+            showOverlay(items2[idx]);
+          }
+        }
+
+        requestAnimationFrame(animate);
+      }
+
+      function spinBothWheels() {
+        if (spinning || !isWheel2Displayed()) return;
+
+        items1 = getItems(textarea1);
+        items2 = getItems(textarea2);
+
+        if (items1.length < 2 || items2.length < 2) return;
+
+        spinning = true;
+
+        const totalRotation1 = Math.PI * 2 * (5 + Math.random() * 5);
+        const totalRotation2 = Math.PI * 2 * (5 + Math.random() * 5);
+        const duration = 4000;
+        const startRotation1 = rotation1;
+        const startRotation2 = rotation2;
+        const startTime = performance.now();
+
+        function easeOut(t) {
+          return 1 - Math.pow(1 - t, 3);
+        }
+
+        function animate(now) {
+          const elapsed = now - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+
+          rotation1 = startRotation1 + totalRotation1 * easeOut(progress);
+          rotation2 = startRotation2 + totalRotation2 * easeOut(progress);
+
+          drawWheel(canvas1, ctx1, rotation1, items1);
+          drawWheel(canvas2, ctx2, rotation2, items2);
+
+          if (progress < 1) {
+            requestAnimationFrame(animate);
+            return;
+          }
+
+          spinning = false;
+
+          const idx1 = getResultIndex(rotation1, items1.length);
+          const idx2 = getResultIndex(rotation2, items2.length);
+
+          showOverlay(items1[idx1], items2[idx2]);
+        }
+
+        requestAnimationFrame(animate);
+      }
+
+      function renderInitialState() {
+        items1 = getItems(textarea1);
+        items2 = getItems(textarea2);
+
+        drawWheel(canvas1, ctx1, rotation1, items1);
+
+        if (isWheel2Displayed()) {
+          drawWheel(canvas2, ctx2, rotation2, items2);
+        } else {
+          ctx2.clearRect(0, 0, canvas2.width, canvas2.height);
+        }
+
+        updateWheelLayout();
+      }
+
+      document.getElementById('close-popup').addEventListener('click', () => {
+        overlay.classList.add('hidden');
+        overlay.style.display = '';
+      });
+
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+          overlay.classList.add('hidden');
+          overlay.style.display = '';
+        }
+      });
+
+      canvas1.addEventListener('click', () => spinSingleWheel(1));
+      canvas2.addEventListener('click', () => spinSingleWheel(2));
+      spinBothBtn.addEventListener('click', spinBothWheels);
+
+      toggleBtn2.addEventListener('click', () => {
+        wheel2Visible = !wheel2Visible;
+
+        wheel2Container.style.display = wheel2Visible ? 'block' : 'none';
+        input2Container.style.display = wheel2Visible ? 'block' : 'none';
+        toggleBtn2.textContent = wheel2Visible ? 'Retirer roue 2' : 'Ajouter roue 2';
+
+        renderInitialState();
+      });
+
+      textarea1.addEventListener('input', () => {
+        if (spinning) return;
+        items1 = getItems(textarea1);
+        drawWheel(canvas1, ctx1, rotation1, items1);
+      });
+
+      textarea2.addEventListener('input', () => {
+        if (spinning || !isWheel2Displayed()) return;
+        items2 = getItems(textarea2);
+        drawWheel(canvas2, ctx2, rotation2, items2);
+      });
+
+      const defaultConfig = {
+        title: 'Lucky Wheel',
+        background_color: '#0f0c29',
+        accent_color: '#f9dc5c',
+        text_color: '#c4b5fd',
+        font_family: 'Fredoka One'
+      };
+
+      function initElementSdkIfAvailable() {
+        if (!window.elementSdk || typeof window.elementSdk.init !== 'function') {
+          return;
+        }
+
+        window.elementSdk.init({
+          defaultConfig,
+          onConfigChange: async (config) => {
+            const t = config.title || defaultConfig.title;
+            document.getElementById('main-title').textContent = t;
+
+            const bg = config.background_color || defaultConfig.background_color;
+            document.querySelector('.app-wrapper').style.background =
+              `linear-gradient(135deg, ${bg}, #302b63, #24243e)`;
+
+            const accent = config.accent_color || defaultConfig.accent_color;
+            document.getElementById('main-title').style.color = accent;
+
+            const textC = config.text_color || defaultConfig.text_color;
+            document.querySelectorAll('label').forEach(label => {
+              label.style.color = textC;
+            });
+
+            const font = config.font_family || defaultConfig.font_family;
+            document.getElementById('main-title').style.fontFamily = `${font}, cursive, sans-serif`;
+          },
+          mapToCapabilities: (config) => ({
+            recolorables: [
+              {
+                get: () => config.background_color || defaultConfig.background_color,
+                set: (v) => {
+                  config.background_color = v;
+                  window.elementSdk.setConfig({ background_color: v });
+                }
+              },
+              {
+                get: () => config.accent_color || defaultConfig.accent_color,
+                set: (v) => {
+                  config.accent_color = v;
+                  window.elementSdk.setConfig({ accent_color: v });
+                }
+              },
+              {
+                get: () => config.text_color || defaultConfig.text_color,
+                set: (v) => {
+                  config.text_color = v;
+                  window.elementSdk.setConfig({ text_color: v });
+                }
+              }
+            ],
+            borderables: [],
+            fontEditable: {
+              get: () => config.font_family || defaultConfig.font_family,
+              set: (v) => {
+                config.font_family = v;
+                window.elementSdk.setConfig({ font_family: v });
+              }
+            },
+            fontSizeable: undefined
+          }),
+          mapToEditPanelValues: (config) =>
+            new Map([['title', config.title || defaultConfig.title]])
+        });
+      }
+
+      function startApp() {
+        renderInitialState();
+        initElementSdkIfAvailable();
+      }
+
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(startApp);
+      } else {
+        window.addEventListener('load', startApp);
+      }
+    </script>
+  </div>
+</body>
+</html>

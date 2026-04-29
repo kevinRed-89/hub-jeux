@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Championnat de lecture</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-1: #eef7ff;
+      --bg-2: #fef6ff;
+      --panel: rgba(255, 255, 255, 0.96);
+      --panel-border: #d9e7ff;
+      --title: #2655c7;
+      --text: #2a3550;
+      --muted: #64708a;
+      --primary: #4c7df0;
+      --primary-hover: #3c6de1;
+      --secondary: #ffb84d;
+      --secondary-hover: #f3a62f;
+      --danger: #ff6b8f;
+      --danger-hover: #f2557d;
+      --timer: #ff5e87;
+      --word-bg: linear-gradient(180deg, #fff7b8 0%, #ffe27a 100%);
+      --word-border: #f3c953;
+      --shadow-soft: 0 10px 30px rgba(56, 84, 136, 0.12);
+      --shadow-pop: 0 12px 24px rgba(76, 125, 240, 0.2);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Baloo 2', cursive;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(255, 255, 255, 0.95) 0, rgba(255,255,255,0) 28%),
+        radial-gradient(circle at top right, rgba(255, 224, 241, 0.7) 0, rgba(255,255,255,0) 22%),
+        linear-gradient(135deg, var(--bg-1), var(--bg-2));
+      padding: 28px 18px 40px;
+      text-align: center;
+    }
+
+    .app {
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
+    .shell {
+      background: var(--panel);
+      border: 2px solid var(--panel-border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-soft);
+      padding: 28px 22px 32px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .shell::before,
+    .shell::after {
+      content: "";
+      position: absolute;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.6;
+    }
+
+    .shell::before {
+      top: -70px;
+      left: -55px;
+      background: radial-gradient(circle, rgba(255, 210, 228, 0.9) 0%, rgba(255, 210, 228, 0) 70%);
+    }
+
+    .shell::after {
+      bottom: -80px;
+      right: -60px;
+      background: radial-gradient(circle, rgba(207, 230, 255, 0.95) 0%, rgba(207, 230, 255, 0) 70%);
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 18px;
+      border-radius: 999px;
+      background: #edf4ff;
+      border: 2px solid #d7e6ff;
+      color: var(--title);
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      margin-bottom: 14px;
+      transition: transform 0.35s ease, opacity 0.35s ease, margin 0.35s ease;
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--title);
+      font-size: clamp(2.2rem, 4vw, 3.6rem);
+      line-height: 1.05;
+      transition: font-size 0.35s ease, opacity 0.35s ease, transform 0.35s ease;
+    }
+
+    .subtitle {
+      margin: 10px auto 0;
+      max-width: 720px;
+      color: var(--muted);
+      font-size: clamp(1.1rem, 2vw, 1.35rem);
+      line-height: 1.35;
+      transition: font-size 0.35s ease, opacity 0.35s ease, transform 0.35s ease, margin 0.35s ease;
+    }
+
+    #inputContainer {
+      margin: 28px auto 20px;
+      max-width: 900px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .panel {
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+      border: 2px solid #e1ecff;
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+    }
+
+    .panel h2 {
+      margin: 0 0 8px;
+      font-size: 1.45rem;
+      color: #3159b7;
+    }
+
+    .panel p {
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 1.02rem;
+      line-height: 1.35;
+    }
+
+    label {
+      display: block;
+      text-align: left;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #35508f;
+      margin-bottom: 8px;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      border: 2px solid #cfe0ff;
+      border-radius: 16px;
+      background: #fff;
+      font-family: inherit;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    input[type="text"] {
+      font-size: 1.25rem;
+      padding: 16px 18px;
+      box-shadow: inset 0 2px 8px rgba(85, 116, 176, 0.06);
+    }
+
+    input[type="number"] {
+      font-size: 1.45rem;
+      text-align: center;
+      padding: 14px 10px;
+      min-width: 120px;
+      max-width: 140px;
+      box-shadow: inset 0 2px 8px rgba(85, 116, 176, 0.05);
+    }
+
+    input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 5px rgba(76, 125, 240, 0.15);
+      transform: translateY(-1px);
+    }
+
+    .time-grid {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    .time-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .time-box label {
+      margin: 0;
+      text-align: center;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 8px;
+      transition: transform 0.35s ease, gap 0.35s ease, margin 0.35s ease;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      font-family: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+      box-shadow: var(--shadow-pop);
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    #startBtn,
+    #restartBtn {
+      font-size: 1.35rem;
+      padding: 14px 28px;
+      min-width: 210px;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, font-size 0.35s ease, padding 0.35s ease, min-width 0.35s ease;
+    }
+
+    #startBtn {
+      background: linear-gradient(180deg, var(--primary) 0%, #3969dc 100%);
+      color: white;
+    }
+
+    #startBtn:hover {
+      background: linear-gradient(180deg, var(--primary-hover) 0%, #345fd0 100%);
+    }
+
+    #restartBtn {
+      background: linear-gradient(180deg, var(--secondary) 0%, #f5aa34 100%);
+      color: #5a3a00;
+      box-shadow: 0 12px 24px rgba(255, 184, 77, 0.28);
+    }
+
+    #restartBtn:hover {
+      background: linear-gradient(180deg, var(--secondary-hover) 0%, #eb9d22 100%);
+    }
+
+    .game-zone {
+      margin-top: 22px;
+      display: none;
+      gap: 22px;
+      transition: margin 0.35s ease, gap 0.35s ease;
+    }
+
+    .game-zone.visible {
+      display: grid;
+    }
+
+    #timer {
+      min-height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 18px;
+      border-radius: 22px;
+      background: linear-gradient(180deg, #fff0f5 0%, #ffe1eb 100%);
+      border: 2px solid #ffc4d3;
+      color: var(--timer);
+      font-size: clamp(2rem, 4.5vw, 3.2rem);
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.85);
+      transition: font-size 0.35s ease, padding 0.35s ease, min-height 0.35s ease;
+    }
+
+    .words-frame {
+      background: #ffffff;
+      border: none;
+      border-radius: 24px;
+      padding: 20px 18px 50px;
+      overflow: hidden;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.85), 0 8px 20px rgba(56,84,136,0.08);
+      transition: height 900ms ease-in-out;
+    }
+
+    #words {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      align-content: flex-start;
+      transition: transform 900ms ease-in-out;
+      will-change: transform;
+    }
+
+    #words li {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 22px 34px;
+      border-radius: 26px;
+      background: var(--word-bg);
+      border: 3px solid var(--word-border);
+      color: #3a2f10;
+      font-size: clamp(3rem, 6.2vw, 5.6rem);
+      line-height: 1;
+      box-shadow: 0 12px 22px rgba(243, 201, 83, 0.22);
+      transition: opacity 1s linear, transform 1s ease, filter 1s ease;
+      will-change: opacity, transform, filter;
+    }
+
+    #words li.word-faded {
+      opacity: 0;
+      transform: scale(0.96);
+      filter: blur(2px);
+      pointer-events: none;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .playing .badge {
+      font-size: 0.92rem;
+      padding: 6px 12px;
+      margin-bottom: 8px;
+      opacity: 0.75;
+      transform: scale(0.94);
+    }
+
+    .playing h1 {
+      font-size: clamp(1.25rem, 2vw, 1.8rem);
+      opacity: 0.8;
+      transform: translateY(-2px);
+    }
+
+    .playing .subtitle {
+      font-size: clamp(0.9rem, 1.4vw, 1rem);
+      margin-top: 4px;
+      opacity: 0.72;
+      transform: translateY(-4px);
+    }
+
+    .playing .button-row {
+      gap: 10px;
+      margin-top: 4px;
+      transform: scale(0.95);
+    }
+
+    .playing #startBtn,
+    .playing #restartBtn {
+      font-size: 1rem;
+      padding: 10px 20px;
+      min-width: 155px;
+    }
+
+    .playing .game-zone {
+      margin-top: 12px;
+      gap: 16px;
+    }
+
+    @media (max-width: 720px) {
+      body {
+        padding: 16px 10px 28px;
+      }
+
+      .shell {
+        padding: 20px 14px 24px;
+        border-radius: 22px;
+      }
+
+      .panel {
+        padding: 14px;
+      }
+
+      .badge {
+        font-size: 0.98rem;
+      }
+
+      input[type="text"] {
+        font-size: 1.08rem;
+      }
+
+      #startBtn,
+      #restartBtn {
+        width: 100%;
+        max-width: 320px;
+      }
+
+      .words-frame {
+        padding: 14px 12px 42px;
+      }
+
+      #words {
+        gap: 12px;
+      }
+
+      #words li {
+        padding: 16px 20px;
+        border-radius: 18px;
+        font-size: clamp(2.4rem, 8vw, 4rem);
+      }
+
+      .playing h1 {
+        font-size: 1.15rem;
+      }
+
+      .playing .subtitle {
+        font-size: 0.82rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="shell">
+      <div class="content">
+        <div class="badge">🏆 Jeu de classe • Lecture rapide</div>
+        <h1>Championnat de lecture</h1>
+        <p class="subtitle">Prépare la liste, choisis le temps, puis lance la partie. Les mots disparaissent peu à peu : il faut lire vite&nbsp;!</p>
+
+        <div id="inputContainer">
+          <div class="panel">
+            <h2>Liste des mots</h2>
+            <p>Écris les mots séparés par des virgules. Exemple : <strong>chat, moto, ballon, banane</strong></p>
+            <label for="wordsInput">Mots à afficher</label>
+            <input type="text" id="wordsInput" placeholder="ex : pomme, banane, orange" />
+          </div>
+
+          <div class="panel">
+            <h2>Durée de la manche</h2>
+            <p>Choisis le temps total avant que tout disparaisse.</p>
+            <div class="time-grid">
+              <div class="time-box">
+                <label for="minutesInput">Minutes</label>
+                <input type="number" id="minutesInput" min="0" value="0" />
+              </div>
+              <div class="time-box">
+                <label for="secondsInput">Secondes</label>
+                <input type="number" id="secondsInput" min="0" max="59" value="0" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button id="startBtn">▶ Démarrer</button>
+          <button id="restartBtn" class="hidden">↺ Recommencer</button>
+        </div>
+
+        <div class="game-zone">
+          <div id="timer"></div>
+          <div class="words-frame">
+            <ul id="words"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const wordsInput = document.getElementById('wordsInput');
+    const minutesInput = document.getElementById('minutesInput');
+    const secondsInput = document.getElementById('secondsInput');
+    const startBtn = document.getElementById('startBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const timerDiv = document.getElementById('timer');
+    const wordsList = document.getElementById('words');
+    const wordsFrame = document.querySelector('.words-frame');
+    const inputContainer = document.getElementById('inputContainer');
+    const gameZone = document.querySelector('.game-zone');
+
+    let wordsArray = [];
+    let timerId = null;
+    let wordTimerId = null;
+    let wordTimeoutId = null;
+    let remainingTime = 0;
+    let intervalMs = 0;
+    let currentIndex = 0;
+    let lineTops = [];
+    let removedLinesCount = 0;
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function renderWords() {
+      wordsList.innerHTML = '';
+      wordsList.style.transform = 'translateY(0px)';
+      wordsFrame.style.height = 'auto';
+
+      wordsArray.forEach((word) => {
+        const li = document.createElement('li');
+        li.textContent = word;
+        wordsList.appendChild(li);
+      });
+
+      requestAnimationFrame(() => {
+        calculateLines();
+        setFrameHeight();
+      });
+    }
+
+    function calculateLines() {
+      const items = Array.from(wordsList.children);
+      const tops = [...new Set(items.map((li) => Math.round(li.offsetTop)))].sort((a, b) => a - b);
+      lineTops = tops;
+      items.forEach((li) => {
+        const top = Math.round(li.offsetTop);
+        li.dataset.line = String(tops.indexOf(top));
+      });
+    }
+
+    function getFrameVerticalPadding() {
+      const styles = window.getComputedStyle(wordsFrame);
+      return parseFloat(styles.paddingTop) + parseFloat(styles.paddingBottom);
+    }
+
+    function setFrameHeight() {
+      const totalHeight = wordsList.scrollHeight;
+      const visibleContentHeight = Math.max(220, totalHeight - getCurrentOffset());
+      const safeHeight = visibleContentHeight + getFrameVerticalPadding();
+      wordsFrame.style.height = `${safeHeight}px`;
+    }
+
+    function getCurrentOffset() {
+      if (removedLinesCount <= 0 || lineTops.length === 0) return 0;
+      return lineTops[Math.min(removedLinesCount, lineTops.length - 1)] || 0;
+    }
+
+    function updateClearedLines() {
+      const items = Array.from(wordsList.children);
+      let newRemovedLinesCount = removedLinesCount;
+
+      while (newRemovedLinesCount < lineTops.length) {
+        const lineItems = items.filter((li) => Number(li.dataset.line) === newRemovedLinesCount);
+        if (lineItems.length === 0 || !lineItems.every((li) => li.classList.contains('word-faded'))) {
+          break;
+        }
+        newRemovedLinesCount++;
+      }
+
+      if (newRemovedLinesCount !== removedLinesCount) {
+        removedLinesCount = newRemovedLinesCount;
+        const offset = getCurrentOffset();
+        wordsList.style.transform = `translateY(-${offset}px)`;
+        setFrameHeight();
+      }
+    }
+
+    function updateTimerDisplay() {
+      const mins = Math.floor(remainingTime / 60);
+      const secs = remainingTime % 60;
+      timerDiv.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    function tick() {
+      if (remainingTime <= 0) {
+        clearInterval(timerId);
+        clearInterval(wordTimerId);
+        clearTimeout(wordTimeoutId);
+        timerDiv.textContent = 'Temps écoulé !';
+        showRestartButton();
+        return;
+      }
+      remainingTime--;
+      updateTimerDisplay();
+    }
+
+    function removeWord() {
+      if (currentIndex >= wordsList.children.length) {
+        clearInterval(wordTimerId);
+        clearTimeout(wordTimeoutId);
+        showRestartButton();
+        return;
+      }
+
+      const li = wordsList.children[currentIndex];
+      li.classList.add('word-faded');
+      setTimeout(updateClearedLines, 1020);
+      currentIndex++;
+    }
+
+    function scheduleWordFade() {
+      clearTimeout(wordTimeoutId);
+      wordTimeoutId = setTimeout(() => {
+        removeWord();
+        if (currentIndex < wordsList.children.length) {
+          wordTimerId = setInterval(removeWord, intervalMs);
+        }
+      }, intervalMs);
+    }
+
+    function showRestartButton() {
+      restartBtn.classList.remove('hidden');
+    }
+
+    startBtn.addEventListener('click', () => {
+      const raw = wordsInput.value.trim();
+      if (!raw) {
+        alert('Veuillez entrer au moins un mot.');
+        return;
+      }
+
+      wordsArray = raw.split(',').map((w) => w.trim()).filter(Boolean);
+      if (wordsArray.length === 0) {
+        alert('La liste ne contient aucun mot valide.');
+        return;
+      }
+
+      const mins = parseInt(minutesInput.value, 10) || 0;
+      const secs = parseInt(secondsInput.value, 10) || 0;
+      remainingTime = mins * 60 + secs;
+
+      if (remainingTime <= 0) {
+        alert('Le temps doit être supérieur à 0.');
+        return;
+      }
+
+      shuffle(wordsArray);
+      renderWords();
+
+      intervalMs = (remainingTime / wordsArray.length) * 1000;
+
+      currentIndex = 0;
+      removedLinesCount = 0;
+      lineTops = [];
+      updateTimerDisplay();
+      clearInterval(timerId);
+      clearInterval(wordTimerId);
+      clearTimeout(wordTimeoutId);
+      clearTimeout(wordTimeoutId);
+      timerId = setInterval(tick, 1000);
+      scheduleWordFade();
+
+      inputContainer.classList.add('hidden');
+      restartBtn.classList.add('hidden');
+      gameZone.classList.add('visible');
+      document.body.classList.add('playing');
+    });
+
+    restartBtn.addEventListener('click', () => {
+      clearInterval(timerId);
+      clearInterval(wordTimerId);
+
+      wordsArray = [];
+      wordsList.innerHTML = '';
+      timerDiv.textContent = '';
+      remainingTime = 0;
+      intervalMs = 0;
+      currentIndex = 0;
+      removedLinesCount = 0;
+      lineTops = [];
+      wordsList.style.transform = 'translateY(0px)';
+      if (wordsFrame) wordsFrame.style.height = 'auto';
+      wordTimeoutId = null;
+
+      inputContainer.classList.remove('hidden');
+      gameZone.classList.remove('visible');
+      restartBtn.classList.add('hidden');
+      document.body.classList.remove('playing');
+    });
+  </script>
+</body>
+</html>

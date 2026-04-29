@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="fr" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flashcards</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+    html, body { height: 100%; margin: 0; }
+    .font-display { font-family: 'Verdana', Arial, sans-serif; }
+    .font-body { font-family: 'Verdana', Arial, sans-serif; }
+    @keyframes cardIn {
+      0% { transform: scale(0.85) rotateY(90deg); opacity: 0; }
+      100% { transform: scale(1) rotateY(0deg); opacity: 1; }
+    }
+    .card-enter { animation: cardIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fadeUp 0.6s ease forwards; }
+    .fade-up-d1 { animation-delay: 0.1s; opacity: 0; }
+    .fade-up-d2 { animation-delay: 0.2s; opacity: 0; }
+    .fade-up-d3 { animation-delay: 0.3s; opacity: 0; }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full font-body" style="background: linear-gradient(135deg, #FFB6D9 0%, #87CEEB 50%, #FFE87C 100%); background-attachment: fixed;">
+  <div id="app" class="h-full w-full flex flex-col items-center justify-center px-4 overflow-auto">
+   <!-- Input View -->
+   <div id="input-view" class="w-full max-w-lg flex flex-col items-center gap-6">
+    <h1 id="title" class="font-display text-4xl fade-up" style="color: #FF6B9D; text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.5);">Flashcards</h1>
+    <p id="instructions" class="text-sm fade-up fade-up-d1" style="color: #4A4A4A;">Entrez vos mots, un par ligne</p><textarea id="words-input" rows="8" class="w-full rounded-2xl p-4 text-base resize-none focus:outline-none focus:ring-4 fade-up fade-up-d2 shadow-lg" style="background-color: #FFFFFF; color: #4A4A4A; border: 3px solid #FFB6D9; focus-ring-color: #FF6B9D; font-size: 16px; font-family: 'DM Sans';" placeholder="pomme
+soleil
+montagne
+rivière"></textarea> <button id="start-btn" onclick="startCards()" class="px-8 py-4 rounded-full text-lg font-semibold transition-all hover:scale-110 active:scale-95 fade-up fade-up-d3 shadow-lg uppercase tracking-wider" style="background: linear-gradient(135deg, #FF6B9D 0%, #FF85AD 100%); color: #FFFFFF; border: 3px solid #FF3D7F; font-weight: 700;"> ✨ C'est parti ✨ </button>
+   </div><!-- Card View -->
+   <div id="card-view" class="hidden w-full max-w-lg flex flex-col items-center gap-8">
+    <div class="w-full flex items-center justify-between">
+     <h2 id="card-title" class="font-display text-3xl" style="color: #FF6B9D; text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.5);">Flashcards</h2><button onclick="resetApp()" class="flex items-center gap-2 px-4 py-2 rounded-full font-semibold transition-all hover:scale-105" style="background-color: #87CEEB; color: #4A4A4A; border: 2px solid #4FA8D5;"> <i data-lucide="rotate-ccw" style="width:18px;height:18px;"></i> Recommencer </button>
+    </div>
+    <p id="counter" class="text-lg font-semibold tracking-wider uppercase" style="color: #4A4A4A; background-color: rgba(255, 255, 255, 0.7); padding: 8px 16px; border-radius: 20px;"></p>
+    <div id="card" class="w-full aspect-[3/2] rounded-3xl flex items-center justify-center p-8 cursor-default select-none shadow-2xl" style="background: linear-gradient(135deg, #FFE8E8 0%, #FFD4D4 100%); border: 4px solid #FF6B9D; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);">
+     <span id="card-word" class="font-display text-center leading-tight" style="color: #000000; font-size: 3rem; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);"></span>
+    </div><button id="next-btn" onclick="showNext()" class="px-8 py-4 rounded-full text-lg font-semibold transition-all hover:scale-110 active:scale-95 flex items-center gap-2 shadow-lg uppercase tracking-wider" style="background: linear-gradient(135deg, #87CEEB 0%, #B0E0E6 100%); color: #FFFFFF; border: 3px solid #4FA8D5; font-weight: 700;"> <span id="next-btn-text">Suivante</span> <i data-lucide="arrow-right" style="width:20px;height:20px;"></i> </button>
+   </div>
+  </div>
+  <script>
+    let words = [];
+    let shuffled = [];
+    let currentIndex = 0;
+
+    const defaultConfig = {
+      main_title: 'Flashcards',
+      next_button_text: 'Suivante',
+      instructions_text: 'Entrez vos mots, un par ligne',
+      background_color: '#FFB6D9',
+      surface_color: '#FFFFFF',
+      text_color: '#4A4A4A',
+      accent_color: '#FF6B9D',
+      muted_color: '#87CEEB',
+      font_family: 'DM Serif Display',
+      font_size: 16
+    };
+
+    function applyConfig(config) {
+      const c = { ...defaultConfig, ...config };
+      const font = c.font_family || defaultConfig.font_family;
+      const baseSize = c.font_size || defaultConfig.font_size;
+
+      document.body.style.background = `linear-gradient(135deg, ${c.muted_color} 0%, ${c.accent_color}33 50%, #FFE87C 100%)`;
+      document.getElementById('title').textContent = c.main_title;
+      document.getElementById('title').style.color = c.accent_color;
+      document.getElementById('card-title').textContent = c.main_title;
+      document.getElementById('card-title').style.color = c.accent_color;
+      document.getElementById('instructions').textContent = c.instructions_text;
+      document.getElementById('next-btn-text').textContent = c.next_button_text;
+
+      document.getElementById('start-btn').style.background = `linear-gradient(135deg, ${c.accent_color} 0%, ${c.accent_color}dd 100%)`;
+      document.getElementById('next-btn').style.background = `linear-gradient(135deg, ${c.muted_color} 0%, ${c.muted_color}dd 100%)`;
+
+      document.getElementById('words-input').style.backgroundColor = c.surface_color;
+      document.getElementById('words-input').style.color = c.text_color;
+      document.getElementById('words-input').style.borderColor = c.muted_color;
+      document.getElementById('card').style.background = `linear-gradient(135deg, #FFE8E8 0%, #FFD4D4 100%)`;
+      document.getElementById('card').style.borderColor = c.accent_color;
+      document.getElementById('card-word').style.color = '#000000';
+      document.getElementById('counter').style.color = c.text_color;
+      document.getElementById('counter').style.backgroundColor = 'rgba(255, 255, 255, 0.7)';
+
+      document.querySelectorAll('.font-display').forEach(el => {
+        el.style.fontFamily = `${font}, Georgia, serif`;
+      });
+      document.getElementById('title').style.fontSize = `${baseSize * 2.5}px`;
+      document.getElementById('card-title').style.fontSize = `${baseSize * 1.875}px`;
+      document.getElementById('card-word').style.fontSize = `${baseSize * 3}px`;
+    }
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function startCards() {
+      const raw = document.getElementById('words-input').value.trim();
+      words = raw.split('\n').map(w => w.trim()).filter(Boolean);
+      if (!words.length) return;
+      shuffled = shuffle(words);
+      currentIndex = 0;
+      document.getElementById('input-view').classList.add('hidden');
+      document.getElementById('card-view').classList.remove('hidden');
+      showCard();
+      lucide.createIcons();
+    }
+
+    function showCard() {
+      const card = document.getElementById('card');
+      const wordEl = document.getElementById('card-word');
+      document.getElementById('counter').textContent = `${currentIndex + 1} / ${shuffled.length}`;
+      card.classList.remove('card-enter');
+      void card.offsetWidth;
+      card.classList.add('card-enter');
+      wordEl.textContent = shuffled[currentIndex];
+    }
+
+    function showNext() {
+      currentIndex++;
+      if (currentIndex >= shuffled.length) {
+        shuffled = shuffle(words);
+        currentIndex = 0;
+      }
+      showCard();
+    }
+
+    function resetApp() {
+      document.getElementById('card-view').classList.add('hidden');
+      document.getElementById('input-view').classList.remove('hidden');
+    }
+
+    // SDK init
+    function makeMutableColor(key) {
+      return {
+        get: () => (window.elementSdk?.config?.[key]) || defaultConfig[key],
+        set: (v) => { window.elementSdk.config[key] = v; window.elementSdk.setConfig({ [key]: v }); }
+      };
+    }
+
+    window.elementSdk?.init({
+      defaultConfig,
+      onConfigChange: async (config) => applyConfig(config),
+      mapToCapabilities: (config) => ({
+        recolorables: [
+          makeMutableColor('background_color'),
+          makeMutableColor('surface_color'),
+          makeMutableColor('text_color'),
+          makeMutableColor('accent_color'),
+          makeMutableColor('muted_color')
+        ],
+        borderables: [],
+        fontEditable: {
+          get: () => config.font_family || defaultConfig.font_family,
+          set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+        },
+        fontSizeable: {
+          get: () => config.font_size || defaultConfig.font_size,
+          set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+        }
+      }),
+      mapToEditPanelValues: (config) => new Map([
+        ['main_title', config.main_title || defaultConfig.main_title],
+        ['next_button_text', config.next_button_text || defaultConfig.next_button_text],
+        ['instructions_text', config.instructions_text || defaultConfig.instructions_text]
+      ])
+    });
+
+    lucide.createIcons();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9e9c1604103f6f0b',t:'MTc3NTc2NDcwMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

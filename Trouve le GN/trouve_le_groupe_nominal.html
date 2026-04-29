@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trouve le groupe nominal</title>
+  <style>
+    :root{--bg1:#eef4ff;--bg2:#fff6ef;--panel:#ffffff;--text:#1f1f1f;--accent:#4f46e5;--accent-dark:#3730a3;--good:#1f9d55;--bad:#d64545;--soft:#6b7280;--shadow:0 14px 34px rgba(0,0,0,.12);}*{box-sizing:border-box;}body{margin:0;min-height:100vh;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,var(--bg1),var(--bg2));color:var(--text);padding:24px;display:flex;justify-content:center;align-items:center;}.app{width:min(1400px,100%);background:var(--panel);border-radius:32px;box-shadow:var(--shadow);padding:28px 28px 36px;}h1{margin:0 0 10px;text-align:center;font-size:clamp(2rem,3vw,3rem);color:var(--accent-dark);}.subtitle{margin:0 0 22px;text-align:center;font-size:clamp(1rem,1.5vw,1.35rem);color:#374151;}.topbar{display:flex;flex-wrap:wrap;justify-content:center;gap:16px;margin-bottom:24px;}.btn{border:none;border-radius:18px;padding:16px 24px;font-size:clamp(1rem,1.4vw,1.3rem);font-weight:700;cursor:pointer;box-shadow:0 6px 14px rgba(0,0,0,.10);transition:transform .08s ease,background .2s ease,opacity .2s ease;}.btn:hover{transform:translateY(-2px);}.btn:active{transform:translateY(0);}.btn-primary{background:var(--accent);color:#fff;}.btn-primary:hover{background:var(--accent-dark);}.btn-secondary{background:#e5e7eb;color:#111827;}.btn-secondary:hover{background:#d1d5db;}.info{margin:0 auto 28px;width:min(1000px,100%);background:#f8fafc;border-radius:22px;padding:18px 22px;text-align:center;font-size:clamp(1.15rem,1.7vw,1.55rem);line-height:1.5;min-height:88px;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 2px #e5e7eb;}.info.good{background:#eefbf3;box-shadow:inset 0 0 0 2px #b7ebcb;color:#0f6b38;}.info.bad{background:#fff1f1;box-shadow:inset 0 0 0 2px #f2b8b8;color:#a12626;}.game-area{background:#fcfcff;border-radius:28px;padding:42px 28px;min-height:320px;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 0 0 3px #ececff;}.sentence{text-align:center;line-height:2.15;font-size:clamp(2rem,3.8vw,4rem);font-weight:700;}.word{appearance:none;border:none;background:transparent;color:inherit;font:inherit;padding:0 .04em;margin:0;border-radius:10px;cursor:pointer;display:inline;transition:background .15s ease,color .15s ease;}.word:hover{background:rgba(79,70,229,.10);}.word:active{transform:none;}.word.wrong{color:var(--bad);background:rgba(214,69,69,.10);}.word.correct{color:var(--good);background:rgba(31,157,85,.12);}.word.disabled{cursor:default;}.noun-group-frame{display:inline;border:5px solid var(--good);border-radius:18px;padding:.08em .14em;background:rgba(31,157,85,.07);box-decoration-break:clone;-webkit-box-decoration-break:clone;}.punct{display:inline;}.legend{margin-top:22px;text-align:center;color:#4b5563;font-size:clamp(1rem,1.35vw,1.2rem);line-height:1.5;}.bottomline{margin-top:18px;text-align:center;font-size:clamp(1rem,1.35vw,1.15rem);color:var(--soft);}.highlight{font-weight:700;}.count{font-weight:700;color:#111827;}button:focus-visible{outline:4px solid #f59e0b;outline-offset:4px;}@media(max-width:900px){.app{padding:20px 18px 26px;}.game-area{padding:28px 14px;min-height:240px;}.info{min-height:78px;padding:14px 16px;}}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <h1>Trouve le groupe nominal</h1>
+    <p class="subtitle">Lis la phrase. Clique sur tous les mots du groupe nominal.</p>
+    <div class="topbar"><button id="newSentenceBtn" class="btn btn-primary">Nouvelle phrase</button><button id="showAnswerBtn" class="btn btn-secondary">Voir la réponse</button></div>
+    <div id="infoBox" class="info">Trouve le groupe nominal dans la phrase.</div>
+    <section class="game-area"><div id="sentence" class="sentence" aria-live="polite"></div></section>
+    <div class="legend">Les mots sur lesquels on s'est trompé restent en <span class="highlight" style="color:#d64545;">rouge</span>.<br>Les mots du groupe nominal apparaissent en <span class="highlight" style="color:#1f9d55;">vert</span>, puis le groupe est <span class="highlight">entouré</span> quand il est trouvé ou quand on clique sur <span class="highlight">Voir la réponse</span>.</div>
+    <div class="bottomline">Nombre d'erreurs sur cette phrase : <span id="errorCount" class="count">0</span></div>
+  </main>
+<script>
+const sentenceEl=document.getElementById("sentence"),infoBox=document.getElementById("infoBox"),errorCountEl=document.getElementById("errorCount"),newSentenceBtn=document.getElementById("newSentenceBtn"),showAnswerBtn=document.getElementById("showAnswerBtn");let currentRound=null;
+function randomItem(a){return a[Math.floor(Math.random()*a.length)];}
+function pushText(tokens,text,isNounGroup=false){const parts=text.split(" ");parts.forEach((part,i)=>{if(part.endsWith(",")){const clean=part.slice(0,-1);if(clean)tokens.push({type:"word",text:clean,isNounGroup});tokens.push({type:"punct",text:","});}else{tokens.push({type:"word",text:part,isNounGroup});}if(i<parts.length-1)tokens.push({type:"space",text:" "});});}
+function makeSentenceFromParts(parts){const tokens=[];parts.forEach((part,i)=>{pushText(tokens,part.text,part.isNounGroup);if(i<parts.length-1)tokens.push({type:"space",text:" "});});tokens.push({type:"punct",text:"."});return tokens;}
+
+const livingSubjectGroups=[
+{text:"Tom",number:"singular"},{text:"Léa",number:"singular"},{text:"Nina",number:"singular"},{text:"Léo",number:"singular"},{text:"Maman",number:"singular"},{text:"Papa",number:"singular"},
+{text:"Le chat",number:"singular"},{text:"La maîtresse",number:"singular"},{text:"Mon frère",number:"singular"},{text:"Cette élève",number:"singular"},{text:"Les enfants",number:"plural"},{text:"Mes amis",number:"plural"},
+{text:"Le petit chat",number:"singular"},{text:"La grande fille",number:"singular"},{text:"Un chien noir",number:"singular"},{text:"Une vieille dame",number:"singular"},{text:"Les jeunes élèves",number:"plural"},{text:"Des lapins blancs",number:"plural"},
+{text:"Le frère de Tom",number:"singular"},{text:"La maman de Léa",number:"singular"},{text:"Le voisin du garçon",number:"singular"},{text:"Les amis de Nina",number:"plural"},{text:"Les élèves de CE1",number:"plural"},
+{text:"Le petit frère de Tom",number:"singular"},{text:"La grande sœur de Léa",number:"singular"},{text:"Les jeunes amis de Nina",number:"plural"},{text:"Les petits cousins de Léo",number:"plural"},{text:"La gentille maîtresse de CE1",number:"singular"}
+];
+const nonLivingSubjectGroups=[
+{text:"La pluie",number:"singular"},{text:"L'horloge",number:"singular"},{text:"L'eau",number:"singular"},
+{text:"Le ballon",number:"singular"},{text:"La porte",number:"singular"},{text:"Une feuille",number:"singular"},{text:"Les rideaux",number:"plural"},{text:"Des images",number:"plural"},
+{text:"Le ballon rouge",number:"singular"},{text:"La porte bleue",number:"singular"},{text:"Une petite feuille",number:"singular"},{text:"Le vieux vélo",number:"singular"},{text:"Les grandes affiches",number:"plural"},{text:"Des cahiers neufs",number:"plural"},
+{text:"Le sac de sport",number:"singular"},{text:"La boîte à crayons",number:"singular"},{text:"Le livre de classe",number:"singular"},{text:"Les cartes du jeu",number:"plural"},{text:"Des feuilles de papier",number:"plural"},
+{text:"Le grand sac de sport",number:"singular"},{text:"La petite boîte à crayons",number:"singular"},{text:"Les jolies cartes du jeu",number:"plural"},{text:"Les grandes feuilles de papier",number:"plural"},{text:"Le vieux livre de classe",number:"singular"}
+];
+const foodGroups=["du pain","du riz","une pomme","une pomme rouge","un bon gâteau","une part de gâteau","un morceau de pain","un bol de riz","la bonne soupe chaude","une petite tartine","un fruit bien mûr"];
+const drinkGroups=["du lait","un verre de lait","un bol de lait","un jus de pomme","un verre d'eau"];
+const neutralLookGroups=["Tom","Léa","Nina","Léo","la porte","ce dessin","un petit dessin","la grande image","le livre de Tom","la carte du jeu","le petit livre de Tom","la belle carte du jeu","le ballon rouge du garçon"];
+const neutralCarryGroups=["mes feutres","un petit dessin","un sac lourd","la boîte rouge","une gomme blanche","le cahier vert","la règle de Léa","un sac de sport","une boîte à crayons","la jolie règle de Léa","un grand sac de sport","une petite boîte à crayons"];
+const neutralFindGroups=["Tom","Léa","mes feutres","une gomme blanche","le cahier vert","la règle de Léa","le ballon du garçon","la carte du jeu","le petit livre de Tom","la jolie règle de Léa","le ballon rouge du garçon","la belle carte du jeu"];
+const neutralOpenGroups=["une boîte bleue","la petite porte","la boîte à crayons","le grand sac","une trousse rouge","la porte","une petite boîte à crayons"];
+const neutralCloseGroups=["la petite porte","la boîte à crayons","le grand sac","la fenêtre","une trousse rouge","ce tiroir","la porte","une petite boîte à crayons"];
+const neutralShowGroups=["un beau dessin","le nouveau jeu","cette image","le livre de Tom","la belle carte du jeu","la grande image","ce dessin","un petit dessin","la carte du jeu"];
+const neutralHideGroups=["une bille verte","le petit jouet","ce message","le ballon rouge du garçon","la jolie règle de Léa","la boîte rouge","une gomme blanche"];
+const neutralPickUpGroups=["la feuille jaune","un crayon","ce papier","les grandes feuilles de papier","une gomme blanche","mes feutres","la règle de Léa","la jolie règle de Léa","la carte du jeu"];
+
+const subjectProfiles={
+  il:{cap:"Il",low:"il",look:["son livre"],carry:["son livre","son cahier de textes","son nouveau cahier de textes"],find:["son cahier de textes","son nouveau cahier de textes"],open:["son livre","son cahier"],close:["son livre","son cahier"],show:["sa carte"],hide:["son goûter","son cahier de textes","son nouveau cahier de textes"],range:["son livre","son cahier","son cahier de textes","son nouveau cahier de textes","sa trousse"]},
+  elle:{cap:"Elle",low:"elle",look:["son livre"],carry:["son livre","son cahier de textes","son nouveau cahier de textes"],find:["son cahier de textes","son nouveau cahier de textes"],open:["son livre","son cahier"],close:["son livre","son cahier"],show:["sa carte"],hide:["son goûter","son cahier de textes","son nouveau cahier de textes"],range:["son livre","son cahier","son cahier de textes","son nouveau cahier de textes","sa trousse"]},
+  je:{cap:"Je",low:"je",look:["mon livre"],carry:["mon livre","mon cahier de textes","mon nouveau cahier de textes"],find:["mon cahier de textes","mon nouveau cahier de textes"],open:["mon livre","mon cahier"],close:["mon livre","mon cahier"],show:["ma carte"],hide:["mon goûter","mon cahier de textes","mon nouveau cahier de textes"],range:["mon livre","mon cahier","mon cahier de textes","mon nouveau cahier de textes","ma trousse"]},
+  tu:{cap:"Tu",low:"tu",look:["ton livre"],carry:["ton livre","ton cahier de textes","ton nouveau cahier de textes"],find:["ton cahier de textes","ton nouveau cahier de textes"],open:["ton livre","ton cahier"],close:["ton livre","ton cahier"],show:["ta carte"],hide:["ton goûter","ton cahier de textes","ton nouveau cahier de textes"],range:["ton livre","ton cahier","ton cahier de textes","ton nouveau cahier de textes","ta trousse"]},
+  nous:{cap:"Nous",low:"nous",look:["notre livre"],carry:["notre livre","notre cahier de textes","notre nouveau cahier de textes"],find:["notre cahier de textes","notre nouveau cahier de textes"],open:["notre livre","notre cahier"],close:["notre livre","notre cahier"],show:["notre carte"],hide:["notre goûter","notre cahier de textes","notre nouveau cahier de textes"],range:["notre livre","notre cahier","notre cahier de textes","notre nouveau cahier de textes","notre trousse"]},
+  vous:{cap:"Vous",low:"vous",look:["votre livre"],carry:["votre livre","votre cahier de textes","votre nouveau cahier de textes"],find:["votre cahier de textes","votre nouveau cahier de textes"],open:["votre livre","votre cahier"],close:["votre livre","votre cahier"],show:["votre carte"],hide:["votre goûter","votre cahier de textes","votre nouveau cahier de textes"],range:["votre livre","votre cahier","votre cahier de textes","votre nouveau cahier de textes","votre trousse"]}
+};
+
+const verbForms={
+  regarde:{il:"regarde",elle:"regarde",je:"regarde",tu:"regardes",nous:"regardons",vous:"regardez"},
+  porte:{il:"porte",elle:"porte",je:"porte",tu:"portes",nous:"portons",vous:"portez"},
+  cherche:{il:"cherche",elle:"cherche",je:"cherche",tu:"cherches",nous:"cherchons",vous:"cherchez"},
+  trouve:{il:"trouve",elle:"trouve",je:"trouve",tu:"trouves",nous:"trouvons",vous:"trouvez"},
+  mange:{il:"mange",elle:"mange",je:"mange",tu:"manges",nous:"mangeons",vous:"mangez"},
+  boit:{il:"boit",elle:"boit",je:"bois",tu:"bois",nous:"buvons",vous:"buvez"},
+  ouvre:{il:"ouvre",elle:"ouvre",je:"ouvre",tu:"ouvres",nous:"ouvrons",vous:"ouvrez"},
+  ferme:{il:"ferme",elle:"ferme",je:"ferme",tu:"fermes",nous:"fermons",vous:"fermez"},
+  montre:{il:"montre",elle:"montre",je:"montre",tu:"montres",nous:"montrons",vous:"montrez"},
+  cache:{il:"cache",elle:"cache",je:"cache",tu:"caches",nous:"cachons",vous:"cachez"},
+  ramasse:{il:"ramasse",elle:"ramasse",je:"ramasse",tu:"ramasses",nous:"ramassons",vous:"ramassez"},
+  range:{il:"range",elle:"range",je:"range",tu:"ranges",nous:"rangeons",vous:"rangez"}
+};
+
+function objectsFor(subjectKey,action){
+  const p=subjectProfiles[subjectKey];
+  if(action==="regarde") return neutralLookGroups.concat(p.look);
+  if(action==="porte") return neutralCarryGroups.concat(p.carry);
+  if(action==="cherche"||action==="trouve") return neutralFindGroups.concat(p.find);
+  if(action==="mange") return foodGroups;
+  if(action==="boit") return drinkGroups;
+  if(action==="ouvre") return neutralOpenGroups.concat(p.open);
+  if(action==="ferme") return neutralCloseGroups.concat(p.close);
+  if(action==="montre") return neutralShowGroups.concat(p.show);
+  if(action==="cache") return neutralHideGroups.concat(p.hide);
+  if(action==="ramasse") return neutralPickUpGroups;
+  if(action==="range") return neutralCarryGroups.concat(p.range);
+  return [];
+}
+
+function makeEntry(subjectKey,action,capitalizedSubject){
+  const p=subjectProfiles[subjectKey];
+  return {s:capitalizedSubject?p.cap:p.low,v:verbForms[action][subjectKey],o:randomItem(objectsFor(subjectKey,action))};
+}
+
+function buildComplementPattern1(){
+  const subjectKeys=["il","elle","je","tu","nous","vous"];
+  const actions=["regarde","porte","cherche","trouve","mange","boit","range"];
+  const c=makeEntry(randomItem(subjectKeys),randomItem(actions),true);
+  return makeSentenceFromParts([{text:c.s,isNounGroup:false},{text:c.v,isNounGroup:false},{text:c.o,isNounGroup:true}]);
+}
+function buildComplementPattern2(){
+  const starters=["Aujourd'hui,","Maintenant,","Très vite,","Doucement,","Soudain,"];
+  const possibleEntries=[];
+  ["il","elle","tu","nous","vous"].forEach(subjectKey=>possibleEntries.push(makeEntry(subjectKey,"ouvre",false)));
+  ["il","elle","je","tu","nous","vous"].forEach(subjectKey=>["ferme","montre","cache","ramasse","range"].forEach(action=>possibleEntries.push(makeEntry(subjectKey,action,false))));
+  const c=randomItem(possibleEntries);
+  return makeSentenceFromParts([{text:randomItem(starters),isNounGroup:false},{text:c.s,isNounGroup:false},{text:c.v,isNounGroup:false},{text:c.o,isNounGroup:true}]);
+}
+
+
+function conjugateIntransitive(subject, singularVerb, pluralVerb){
+  return subject.number === "plural" ? pluralVerb : singularVerb;
+}
+function buildLivingSubjectPattern(){
+  const subject=randomItem(livingSubjectGroups);
+  const verbChoices=[
+    ["arrive","arrivent"],
+    ["avance","avancent"],
+    ["recule","reculent"],
+    ["marche","marchent"],
+    ["court","courent"],
+    ["saute","sautent"],
+    ["sourit","sourient"],
+    ["rit","rient"],
+    ["danse","dansent"],
+    ["chante","chantent"],
+    ["joue","jouent"],
+    ["attend","attendent"]
+  ];
+  const places=["ici","dehors","doucement","rapidement","calmement","aujourd'hui"];
+  const pair=randomItem(verbChoices);
+  const verb=conjugateIntransitive(subject,pair[0],pair[1]);
+  return makeSentenceFromParts([
+    {text:subject.text,isNounGroup:true},
+    {text:verb,isNounGroup:false},
+    {text:randomItem(places),isNounGroup:false}
+  ]);
+}
+function buildNonLivingSubjectPattern(){
+  // Les sujets non vivants sont associés à des fins de phrases préparées.
+  // Cela évite les phrases grammaticales mais peu naturelles.
+  const entries=[
+    {subject:"La pluie", rest:"tombe dehors"},
+    {subject:"L'horloge", rest:"tourne doucement"},
+    {subject:"L'eau", rest:"coule doucement"},
+    {subject:"Le ballon", rest:"roule vite"},
+    {subject:"La porte", rest:"grince doucement"},
+    {subject:"Une feuille", rest:"tombe doucement"},
+    {subject:"Les rideaux", rest:"bougent doucement"},
+    {subject:"Des images", rest:"apparaissent soudain"},
+    {subject:"Le ballon rouge", rest:"roule vite"},
+    {subject:"La porte bleue", rest:"reste ouverte"},
+    {subject:"Une petite feuille", rest:"vole lentement"},
+    {subject:"Le vieux vélo", rest:"reste dehors"},
+    {subject:"Les grandes affiches", rest:"restent visibles"},
+    {subject:"Des cahiers neufs", rest:"sont prêts"},
+    {subject:"Le sac de sport", rest:"reste lourd"},
+    {subject:"La boîte à crayons", rest:"tombe bruyamment"},
+    {subject:"Le livre de classe", rest:"reste fermé"},
+    {subject:"Les cartes du jeu", rest:"glissent vite"},
+    {subject:"Des feuilles de papier", rest:"volent partout"},
+    {subject:"Le grand sac de sport", rest:"reste fermé"},
+    {subject:"La petite boîte à crayons", rest:"tombe doucement"},
+    {subject:"Les jolies cartes du jeu", rest:"glissent lentement"},
+    {subject:"Les grandes feuilles de papier", rest:"volent partout"},
+    {subject:"Le vieux livre de classe", rest:"reste ouvert"}
+  ];
+  const choice=randomItem(entries);
+  return makeSentenceFromParts([
+    {text:choice.subject,isNounGroup:true},
+    {text:choice.rest,isNounGroup:false}
+  ]);
+}
+
+const builders=[buildLivingSubjectPattern,buildNonLivingSubjectPattern,buildComplementPattern1,buildComplementPattern2];
+function generateRound(){const tokens=randomItem(builders)();currentRound={tokens,solved:false,answerShown:false,wrongIndexes:new Set(),correctIndexes:new Set(),errorCount:0};updateInfo("Trouve le groupe nominal dans la phrase.","");updateErrorCount();renderSentence();}
+function updateInfo(message,type){infoBox.textContent=message;infoBox.classList.remove("good","bad");if(type==="good")infoBox.classList.add("good");else if(type==="bad")infoBox.classList.add("bad");}
+function updateErrorCount(){errorCountEl.textContent=currentRound.errorCount;}
+function getNounGroupWordIndexes(){return currentRound.tokens.map((token,index)=>({token,index})).filter(item=>item.token.type==="word"&&item.token.isNounGroup).map(item=>item.index);}
+function getNounGroupText(){return currentRound.tokens.filter(token=>token.type==="word"&&token.isNounGroup).map(token=>token.text).join(" ");}
+function appendToken(parent,token,index){if(token.type==="word"){const btn=document.createElement("button");btn.type="button";btn.className="word";btn.textContent=token.text;btn.setAttribute("aria-label",token.text);if(currentRound.wrongIndexes.has(index))btn.classList.add("wrong");if(currentRound.correctIndexes.has(index))btn.classList.add("correct");if(currentRound.solved||currentRound.answerShown)btn.classList.add("disabled");btn.addEventListener("click",()=>handleWordClick(index));parent.appendChild(btn);}else if(token.type==="punct"){const span=document.createElement("span");span.className="punct";span.textContent=token.text;parent.appendChild(span);}else if(token.type==="space"){parent.appendChild(document.createTextNode(" "));}}
+function renderSentence(){sentenceEl.innerHTML="";const shouldFrame=currentRound.solved||currentRound.answerShown;let wrapper=null;currentRound.tokens.forEach((token,index)=>{if(shouldFrame&&token.isNounGroup){if(!wrapper){wrapper=document.createElement("span");wrapper.className="noun-group-frame";sentenceEl.appendChild(wrapper);}appendToken(wrapper,token,index);}else{if(wrapper&&token.type!=="word"&&token.type!=="space")wrapper=null;if(wrapper&&token.type==="space"){const next=currentRound.tokens[index+1];if(next&&next.isNounGroup){appendToken(wrapper,token,index);return;}wrapper=null;}appendToken(sentenceEl,token,index);}});}
+function handleWordClick(index){if(currentRound.solved||currentRound.answerShown)return;const token=currentRound.tokens[index];if(!token||token.type!=="word")return;if(token.isNounGroup){currentRound.correctIndexes.add(index);const answerIndexes=getNounGroupWordIndexes();const foundCount=answerIndexes.filter(i=>currentRound.correctIndexes.has(i)).length;if(foundCount===answerIndexes.length){currentRound.solved=true;updateInfo(`Bravo ! "${getNounGroupText()}" est le groupe nominal.`,"good");}else{const remaining=answerIndexes.length-foundCount;updateInfo(`Oui ! Continue : il reste ${remaining} mot${remaining>1?"s":""} à trouver dans le groupe nominal.`,"good");}}else{if(!currentRound.wrongIndexes.has(index)){currentRound.wrongIndexes.add(index);currentRound.errorCount+=1;updateErrorCount();}updateInfo(`"${token.text}" ne fait pas partie du groupe nominal. Continue.`,"bad");}renderSentence();}
+function showAnswer(){if(!currentRound)return;currentRound.answerShown=true;currentRound.tokens.forEach((token,index)=>{if(token.type==="word"&&token.isNounGroup)currentRound.correctIndexes.add(index);});updateInfo(`La réponse est : "${getNounGroupText()}".`,"good");renderSentence();}
+newSentenceBtn.addEventListener("click",generateRound);showAnswerBtn.addEventListener("click",showAnswer);generateRound();
+</script>
+</body>
+</html>

@@ -1,0 +1,1135 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Memory CE1</title>
+  <style>
+    @font-face {
+      font-family: "Marelle";
+      src: url("./Marelle2-Regular.ttf") format("truetype");
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    :root {
+      --bg: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      --panel: rgba(255, 255, 255, 0.08);
+      --panel-border: rgba(255, 255, 255, 0.12);
+      --primary: #f9dc5c;
+      --primary-dark: #d4b63f;
+      --accent: #c4b5fd;
+      --text: #eee9ff;
+      --text-dark: #1a1a2e;
+      --success: #42d392;
+      --danger: #f25c54;
+      --shadow: 0 10px 28px rgba(0,0,0,0.28);
+      --radius: 18px;
+      --card-front-1: #f9dc5c;
+      --card-front-2: #ff9e00;
+      --card-back: #fad2ca;
+      --card-border: rgba(249,220,92,0.45);
+      --matched-bg: #fad2ca;
+      --matched-border: #42d392;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .app {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 20px 20px 40px;
+      transition: max-width 0.25s ease, padding 0.25s ease;
+    }
+
+    h1 {
+      text-align: center;
+      margin: 0 0 18px;
+      font-size: clamp(2rem, 3vw, 3rem);
+      color: var(--primary);
+      text-shadow: 0 2px 12px rgba(249,220,92,.35);
+    }
+
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      background: var(--panel);
+      padding: 18px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--panel-border);
+      backdrop-filter: blur(6px);
+      position: relative;
+      z-index: 1000;
+    }
+
+    .menu-wrapper {
+      position: relative;
+      z-index: 1100;
+    }
+
+    .menu-button,
+    .action-button,
+    .save-button,
+    .cancel-button,
+    .confirm-delete,
+    .cancel-delete,
+    .view-toggle-button {
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: transform 0.12s ease, background 0.12s ease, box-shadow 0.12s ease;
+      box-shadow: var(--shadow);
+    }
+
+    .menu-button,
+    .action-button {
+      min-height: 64px;
+      padding: 14px 22px;
+      font-size: 1.35rem;
+      color: var(--text-dark);
+    }
+
+    .menu-button {
+      background: linear-gradient(135deg, var(--primary), #ffb703);
+    }
+
+    .action-button {
+      background: linear-gradient(135deg, #70d6ff, #48bfe3);
+    }
+
+    .menu-button:hover,
+    .action-button:hover,
+    .save-button:hover,
+    .cancel-button:hover,
+    .confirm-delete:hover,
+    .cancel-delete:hover,
+    .view-toggle-button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 32px rgba(0,0,0,0.34);
+    }
+
+    .menu-button:active,
+    .action-button:active,
+    .save-button:active,
+    .cancel-button:active,
+    .confirm-delete:active,
+    .cancel-delete:active,
+    .view-toggle-button:active {
+      transform: translateY(1px);
+    }
+
+    .menu {
+      position: absolute;
+      top: calc(100% + 10px);
+      left: 0;
+      min-width: 420px;
+      max-width: 560px;
+      background: rgba(36, 36, 62, 0.96);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 10px;
+      display: none;
+      z-index: 1200;
+      border: 1px solid rgba(249,220,92,0.2);
+    }
+
+    .menu.open {
+      display: block;
+    }
+
+    .menu-item {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: none;
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+      font-size: 1.15rem;
+      font-weight: bold;
+      cursor: pointer;
+      margin: 6px 0;
+      text-align: left;
+    }
+
+    .menu-item:hover {
+      background: rgba(249,220,92,0.12);
+    }
+
+    .menu-label {
+      flex: 1;
+      text-align: left;
+    }
+
+    .trash-btn {
+      flex-shrink: 0;
+      width: 38px;
+      height: 38px;
+      border: none;
+      border-radius: 10px;
+      background: rgba(242,92,84,0.18);
+      color: #ffd7d5;
+      cursor: pointer;
+      font-size: 1.1rem;
+      line-height: 1;
+    }
+
+    .trash-btn:hover {
+      background: rgba(242,92,84,0.32);
+    }
+
+    .status-row {
+      max-width: 1200px;
+      margin: 0 auto 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .status {
+      flex: 1;
+      text-align: center;
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: var(--accent);
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 14px 18px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(4px);
+    }
+
+    .view-toggle-button {
+      min-height: 56px;
+      padding: 12px 20px;
+      font-size: 1.1rem;
+      color: var(--text-dark);
+      background: linear-gradient(135deg, #c4b5fd, #a78bfa);
+      white-space: nowrap;
+    }
+
+    .memory-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(220px, 1fr));
+      gap: 18px;
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+      transition: max-width 0.25s ease, gap 0.25s ease;
+    }
+
+    .card {
+      aspect-ratio: 1.45 / 1;
+      perspective: 1200px;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      padding: 0;
+      position: relative;
+      z-index: 1;
+      transition: transform 0.2s ease;
+    }
+
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.5s ease;
+      transform-style: preserve-3d;
+    }
+
+    .card.flipped .card-inner,
+    .card.matched .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .card-face {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 18px;
+      border-radius: 22px;
+      backface-visibility: hidden;
+      box-shadow: var(--shadow);
+      user-select: none;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      white-space: normal;
+      line-height: 1.15;
+    }
+
+    .card-front {
+      background: linear-gradient(135deg, var(--card-front-1), var(--card-front-2));
+      color: var(--text-dark);
+      font-size: clamp(3.4rem, 4.3vw, 5.4rem);
+      font-weight: 900;
+      border: 2px solid rgba(255,255,255,0.2);
+      text-shadow: 0 2px 8px rgba(255,255,255,0.22);
+    }
+
+    .card-back {
+      background: #fad2ca;
+      color: var(--text-dark);
+      transform: rotateY(180deg);
+      font-size: clamp(2.2rem, 2.2vw, 2.8rem);
+      font-weight: bold;
+      border: 5px solid var(--card-border);
+    }
+
+    .card-back.is-cursive {
+      font-family: "Marelle", cursive;
+      font-weight: bold;
+      font-size: clamp(1.95rem, 2.05vw, 2.55rem);
+      line-height: 1.58;
+      letter-spacing: 0.01em;
+      font-variant-ligatures: common-ligatures contextual discretionary-ligatures;
+      font-feature-settings: "liga" 1, "clig" 1, "calt" 1, "dlig" 1;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .card.matched .card-back {
+      background: #fad2ca;
+      border-color: var(--matched-border);
+    }
+
+    .editor-panel {
+      display: none;
+      margin: 28px auto 0;
+      max-width: 1100px;
+      background: rgba(36, 36, 62, 0.96);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      padding: 24px;
+      border: 1px solid rgba(249,220,92,0.2);
+      position: relative;
+      z-index: 900;
+    }
+
+    .editor-panel.show {
+      display: block;
+    }
+
+    .editor-panel h2 {
+      margin-top: 0;
+      text-align: center;
+      font-size: 2rem;
+      color: var(--primary);
+    }
+
+    .editor-help {
+      text-align: center;
+      font-size: 1.1rem;
+      margin-bottom: 18px;
+      color: var(--accent);
+    }
+
+    .editor-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    .editor-table th,
+    .editor-table td {
+      border: 2px solid rgba(196,181,253,0.25);
+      padding: 10px;
+      color: var(--text);
+    }
+
+    .editor-table th {
+      background: rgba(255,255,255,0.08);
+      font-size: 1.2rem;
+      color: var(--primary);
+    }
+
+    .editor-table input {
+      width: 100%;
+      min-height: 58px;
+      padding: 10px 12px;
+      font-size: 1.2rem;
+      border: 2px solid rgba(196,181,253,0.35);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+    }
+
+    .editor-actions {
+      margin-top: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .list-name-input {
+      min-width: 280px;
+      min-height: 58px;
+      padding: 10px 14px;
+      font-size: 1.15rem;
+      border: 2px solid rgba(196,181,253,0.35);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.08);
+      color: var(--text);
+    }
+
+    .list-name-input::placeholder,
+    .editor-table input::placeholder {
+      color: rgba(238,233,255,0.65);
+    }
+
+    .save-button,
+    .cancel-button {
+      min-height: 58px;
+      padding: 12px 22px;
+      font-size: 1.15rem;
+      color: var(--text-dark);
+    }
+
+    .save-button {
+      background: linear-gradient(135deg, #42d392, #80ed99);
+    }
+
+    .cancel-button {
+      background: linear-gradient(135deg, #c4b5fd, #a78bfa);
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 2000;
+      backdrop-filter: blur(4px);
+    }
+
+    .overlay.show {
+      display: flex;
+    }
+
+    .popup {
+      width: min(760px, 100%);
+      background: linear-gradient(145deg, #302b63, #24243e);
+      border-radius: 28px;
+      padding: 34px 28px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+      border: 2px solid rgba(249,220,92,.25);
+    }
+
+    .popup h2 {
+      margin: 0 0 16px;
+      font-size: clamp(2.2rem, 4vw, 3.8rem);
+      color: var(--primary);
+    }
+
+    .popup p {
+      margin: 0 0 26px;
+      font-size: clamp(1.4rem, 2.3vw, 2rem);
+      line-height: 1.4;
+      color: var(--accent);
+    }
+
+    .popup button {
+      min-height: 62px;
+      padding: 12px 24px;
+      font-size: 1.3rem;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--primary), #ffb703);
+      color: var(--text-dark);
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .delete-popup p {
+      margin-bottom: 22px;
+    }
+
+    .delete-actions {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .confirm-delete,
+    .cancel-delete {
+      min-height: 58px;
+      padding: 12px 22px;
+      font-size: 1.15rem;
+      color: var(--text-dark);
+    }
+
+    .confirm-delete {
+      background: linear-gradient(135deg, #f25c54, #ff7b72);
+    }
+
+    .cancel-delete {
+      background: linear-gradient(135deg, #c4b5fd, #a78bfa);
+    }
+
+    body.expanded .app {
+      max-width: 98vw;
+      padding: 8px 12px 20px;
+    }
+
+    body.expanded h1,
+    body.expanded .topbar {
+      display: none;
+    }
+
+    body.expanded .status-row {
+      max-width: 98vw;
+      margin-bottom: 14px;
+      gap: 18px;
+    }
+
+    body.expanded .status {
+      font-size: clamp(1.5rem, 2.1vw, 2.2rem);
+      padding: 18px 24px;
+    }
+
+    body.expanded .view-toggle-button {
+      min-height: 64px;
+      font-size: 1.25rem;
+      padding: 14px 24px;
+    }
+
+    body.expanded .memory-grid {
+      max-width: 98vw;
+      gap: 24px;
+      grid-template-columns: repeat(4, minmax(280px, 1fr));
+    }
+
+    body.expanded .card {
+      aspect-ratio: 1.6 / 1;
+    }
+
+    body.expanded .card-face {
+      padding: 24px;
+      border-radius: 26px;
+    }
+
+    body.expanded .card-front {
+      font-size: clamp(4.6rem, 6vw, 7.6rem);
+    }
+
+    body.expanded .card-back {
+      font-size: clamp(2.9rem, 3vw, 3.9rem);
+    }
+
+    body.expanded .card-back.is-cursive {
+      font-size: clamp(2.45rem, 2.7vw, 3.35rem);
+      line-height: 1.5;
+    }
+
+    @media (max-width: 1100px) {
+      .memory-grid,
+      body.expanded .memory-grid {
+        grid-template-columns: repeat(2, minmax(240px, 1fr));
+      }
+
+      .status-row {
+        flex-direction: column;
+      }
+
+      .view-toggle-button {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .memory-grid,
+      body.expanded .memory-grid {
+        grid-template-columns: repeat(1, minmax(220px, 1fr));
+      }
+
+      .menu {
+        min-width: 300px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>Jeu de memory</h1>
+
+    <div class="topbar">
+      <div class="menu-wrapper">
+        <button id="menuButton" class="menu-button" aria-expanded="false">Listes ▼</button>
+        <div id="menu" class="menu" aria-hidden="true"></div>
+      </div>
+
+      <button id="newListButton" class="action-button">Nouvelle liste</button>
+    </div>
+
+    <div class="status-row">
+      <div id="status" class="status">Retrouve tous les couples !</div>
+      <button id="viewToggleButton" class="view-toggle-button" type="button">Agrandir</button>
+    </div>
+
+    <div id="gameBoard" class="memory-grid"></div>
+
+    <div id="editorPanel" class="editor-panel">
+      <h2>Créer ou modifier une liste</h2>
+      <div class="editor-help">
+        Modifie les mots ci-dessous, donne un nom à ta liste, puis clique sur <strong>Enregistrer</strong>.
+      </div>
+
+      <table class="editor-table">
+        <thead>
+          <tr>
+            <th>Colonne 1</th>
+            <th>Colonne 2</th>
+          </tr>
+        </thead>
+        <tbody id="editorBody"></tbody>
+      </table>
+
+      <div class="editor-actions">
+        <input id="listNameInput" class="list-name-input" type="text" placeholder="Nom de la nouvelle liste" />
+        <button id="saveListButton" class="save-button">Enregistrer</button>
+        <button id="cancelEditButton" class="cancel-button">Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="victoryOverlay" class="overlay">
+    <div class="popup">
+      <h2>Bravo !</h2>
+      <p>Tu as retrouvé tous les couples !</p>
+      <button id="closeVictoryButton">Rejouer</button>
+    </div>
+  </div>
+
+  <div id="deleteOverlay" class="overlay">
+    <div class="popup delete-popup">
+      <h2>Supprimer la liste ?</h2>
+      <p>Veux-tu vraiment supprimer cette liste enregistrée ?</p>
+      <div class="delete-actions">
+        <button id="confirmDeleteButton" class="confirm-delete">Oui, supprimer</button>
+        <button id="cancelDeleteButton" class="cancel-delete">Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "memory_ce1_custom_lists_v3";
+    const PAIR_COUNT = 6;
+    const CURSIVE_CARD_COUNT = 6;
+
+    const builtInLists = [
+      {
+        id: "synonymes",
+        name: "Synonymes",
+        deletable: false,
+        pairs: [
+          ["gentil", "sympa"],
+          ["bicyclette", "vélo"],
+          ["contente", "heureuse"],
+          ["un manteau", "une veste"],
+          ["un bonbon", "une sucrerie"],
+          ["minuscule", "petit"]
+        ]
+      },
+      {
+        id: "contraires",
+        name: "Contraires",
+        deletable: false,
+        pairs: [
+          ["gentil", "méchant"],
+          ["debout", "assis"],
+          ["rapide", "lent"],
+          ["grand", "petit"],
+          ["un ami", "un ennemi"],
+          ["monter", "descendre"]
+        ]
+      },
+      {
+        id: "generique-specifique",
+        name: "Terme générique/spécifique",
+        deletable: false,
+        pairs: [
+          ["animaux", "chien, cheval, poisson"],
+          ["plantes", "arbre, fleur, herbe"],
+          ["aliments", "pizza, carotte, riz"],
+          ["couleurs", "jaune, rouge, bleu"],
+          ["véhicules", "voiture, bateau, avion"],
+          ["sports", "foot, basket, natation"]
+        ]
+      },
+      {
+        id: "verbes",
+        name: "Verbes conjugués/à l'infinitif",
+        deletable: false,
+        pairs: [
+          ["je mange", "manger"],
+          ["tu joues", "jouer"],
+          ["il lit", "lire"],
+          ["elle chante", "chanter"],
+          ["nous écrivons", "écrire"],
+          ["vous courez", "courir"]
+        ]
+      }
+    ];
+
+    let customLists = loadCustomLists();
+    let currentListId = "synonymes";
+    let currentPairs = [];
+    let cards = [];
+    let flippedCards = [];
+    let lockBoard = false;
+    let matchedPairsCount = 0;
+    let pendingDeleteId = null;
+    let isExpanded = false;
+
+    const gameBoard = document.getElementById("gameBoard");
+    const statusEl = document.getElementById("status");
+    const menuButton = document.getElementById("menuButton");
+    const menu = document.getElementById("menu");
+    const newListButton = document.getElementById("newListButton");
+    const editorPanel = document.getElementById("editorPanel");
+    const editorBody = document.getElementById("editorBody");
+    const listNameInput = document.getElementById("listNameInput");
+    const saveListButton = document.getElementById("saveListButton");
+    const cancelEditButton = document.getElementById("cancelEditButton");
+    const victoryOverlay = document.getElementById("victoryOverlay");
+    const closeVictoryButton = document.getElementById("closeVictoryButton");
+    const deleteOverlay = document.getElementById("deleteOverlay");
+    const confirmDeleteButton = document.getElementById("confirmDeleteButton");
+    const cancelDeleteButton = document.getElementById("cancelDeleteButton");
+    const viewToggleButton = document.getElementById("viewToggleButton");
+
+    function normalizeCustomPairs(pairs) {
+      const cleaned = Array.isArray(pairs)
+        ? pairs
+            .map(pair => Array.isArray(pair) ? [String(pair[0] || "").trim(), String(pair[1] || "").trim()] : ["", ""])
+            .filter(pair => pair[0] && pair[1])
+        : [];
+
+      return cleaned.slice(0, PAIR_COUNT);
+    }
+
+    function loadCustomLists() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return [];
+        return parsed
+          .filter(item =>
+            item &&
+            typeof item.id === "string" &&
+            typeof item.name === "string" &&
+            Array.isArray(item.pairs)
+          )
+          .map(item => ({
+            ...item,
+            pairs: normalizeCustomPairs(item.pairs)
+          }))
+          .filter(item => item.pairs.length === PAIR_COUNT);
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function saveCustomLists() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(customLists));
+    }
+
+    function getAllLists() {
+      return [...builtInLists, ...customLists];
+    }
+
+    function getListById(listId) {
+      return getAllLists().find(list => list.id === listId);
+    }
+
+    function shuffle(array) {
+      const copy = [...array];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function buildCardsFromPairs(pairs) {
+      const tempCards = [];
+
+      pairs.forEach((pair, pairIndex) => {
+        tempCards.push({
+          id: cryptoRandomId(),
+          pairId: pairIndex,
+          text: pair[0],
+          matched: false,
+          useCursive: false
+        });
+
+        tempCards.push({
+          id: cryptoRandomId(),
+          pairId: pairIndex,
+          text: pair[1],
+          matched: false,
+          useCursive: false
+        });
+      });
+
+      const shuffledCards = shuffle(tempCards);
+      const indices = shuffle([...Array(shuffledCards.length).keys()]).slice(0, CURSIVE_CARD_COUNT);
+
+      indices.forEach(index => {
+        shuffledCards[index].useCursive = true;
+      });
+
+      return shuffledCards;
+    }
+
+    function cryptoRandomId() {
+      return Math.random().toString(36).slice(2) + Date.now().toString(36);
+    }
+
+    function renderBoard() {
+      gameBoard.innerHTML = "";
+
+      cards.forEach((cardData, index) => {
+        const card = document.createElement("button");
+        card.className = "card";
+        card.type = "button";
+        card.dataset.id = cardData.id;
+        card.setAttribute("aria-label", `Carte ${index + 1}`);
+
+        if (cardData.flipped) {
+          card.classList.add("flipped");
+        }
+
+        if (cardData.matched) {
+          card.classList.add("matched");
+        }
+
+        card.innerHTML = `
+          <div class="card-inner">
+            <div class="card-face card-front">${index + 1}</div>
+            <div class="card-face card-back ${cardData.useCursive ? 'is-cursive' : ''}">${escapeHtml(cardData.text)}</div>
+          </div>
+        `;
+
+        card.addEventListener("click", () => handleCardClick(cardData.id));
+        gameBoard.appendChild(card);
+      });
+    }
+
+    function escapeHtml(text) {
+      return text
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function handleCardClick(cardId) {
+      if (lockBoard) return;
+
+      const clickedCard = cards.find(card => card.id === cardId);
+      if (!clickedCard) return;
+      if (clickedCard.flipped || clickedCard.matched) return;
+      if (flippedCards.length >= 2) return;
+
+      clickedCard.flipped = true;
+      flippedCards.push(clickedCard);
+      renderBoard();
+
+      if (flippedCards.length === 2) {
+        checkMatch();
+      }
+    }
+
+    function checkMatch() {
+      const [first, second] = flippedCards;
+
+      if (first.pairId === second.pairId) {
+        first.matched = true;
+        second.matched = true;
+        matchedPairsCount++;
+        flippedCards = [];
+        updateStatus();
+
+        if (matchedPairsCount === currentPairs.length) {
+          setTimeout(() => {
+            victoryOverlay.classList.add("show");
+          }, 350);
+        } else {
+          renderBoard();
+        }
+      } else {
+        lockBoard = true;
+        updateStatus("Ce n'est pas le bon couple...");
+        renderBoard();
+
+        setTimeout(() => {
+          first.flipped = false;
+          second.flipped = false;
+          flippedCards = [];
+          lockBoard = false;
+          updateStatus();
+          renderBoard();
+        }, 2000);
+      }
+    }
+
+    function updateStatus(customText = "") {
+      if (customText) {
+        statusEl.textContent = customText;
+        return;
+      }
+
+      const found = matchedPairsCount;
+      const total = currentPairs.length;
+      statusEl.textContent = `Couples trouvés : ${found} / ${total}`;
+    }
+
+    function updateViewToggleLabel() {
+      viewToggleButton.textContent = isExpanded ? "Réduire" : "Agrandir";
+    }
+
+    function toggleExpandedView() {
+      isExpanded = !isExpanded;
+      document.body.classList.toggle("expanded", isExpanded);
+      updateViewToggleLabel();
+      closeMenu();
+    }
+
+    function startGameFromList(listId) {
+      const selectedList = getListById(listId);
+      if (!selectedList) return;
+
+      currentListId = listId;
+      currentPairs = selectedList.pairs.map(pair => [...pair]);
+      cards = buildCardsFromPairs(currentPairs).map(card => ({
+        ...card,
+        flipped: false
+      }));
+      flippedCards = [];
+      lockBoard = false;
+      matchedPairsCount = 0;
+      victoryOverlay.classList.remove("show");
+      updateStatus();
+      renderBoard();
+      closeMenu();
+    }
+
+    function renderMenu() {
+      const lists = getAllLists();
+      menu.innerHTML = "";
+
+      lists.forEach(list => {
+        const row = document.createElement("div");
+        row.className = "menu-item";
+
+        const labelBtn = document.createElement("button");
+        labelBtn.className = "menu-label";
+        labelBtn.textContent = list.name;
+        labelBtn.style.border = "none";
+        labelBtn.style.background = "transparent";
+        labelBtn.style.font = "inherit";
+        labelBtn.style.cursor = "pointer";
+        labelBtn.style.color = "inherit";
+        labelBtn.style.textAlign = "left";
+        labelBtn.type = "button";
+
+        labelBtn.addEventListener("click", () => startGameFromList(list.id));
+
+        row.appendChild(labelBtn);
+
+        if (list.deletable) {
+          const trash = document.createElement("button");
+          trash.className = "trash-btn";
+          trash.type = "button";
+          trash.title = "Supprimer cette liste";
+          trash.setAttribute("aria-label", `Supprimer la liste ${list.name}`);
+          trash.textContent = "🗑";
+          trash.addEventListener("click", (event) => {
+            event.stopPropagation();
+            askDeleteList(list.id);
+          });
+          row.appendChild(trash);
+        }
+
+        menu.appendChild(row);
+      });
+    }
+
+    function toggleMenu() {
+      const isOpen = menu.classList.toggle("open");
+      menuButton.setAttribute("aria-expanded", String(isOpen));
+      menu.setAttribute("aria-hidden", String(!isOpen));
+    }
+
+    function closeMenu() {
+      menu.classList.remove("open");
+      menuButton.setAttribute("aria-expanded", "false");
+      menu.setAttribute("aria-hidden", "true");
+    }
+
+    function openEditorWithCurrentPairs() {
+      editorBody.innerHTML = "";
+      const selectedList = getListById(currentListId) || getListById("synonymes");
+      const pairs = selectedList.pairs;
+
+      for (let i = 0; i < PAIR_COUNT; i++) {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td><input type="text" value="${escapeAttribute(pairs[i]?.[0] || "")}" data-row="${i}" data-col="0"></td>
+          <td><input type="text" value="${escapeAttribute(pairs[i]?.[1] || "")}" data-row="${i}" data-col="1"></td>
+        `;
+        editorBody.appendChild(row);
+      }
+
+      listNameInput.value = "";
+      editorPanel.classList.add("show");
+      editorPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function escapeAttribute(text) {
+      return text
+        .replaceAll("&", "&amp;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+    }
+
+    function hideEditor() {
+      editorPanel.classList.remove("show");
+    }
+
+    function collectEditorPairs() {
+      const rows = [...editorBody.querySelectorAll("tr")];
+      return rows.map(row => {
+        const inputs = row.querySelectorAll("input");
+        return [inputs[0].value.trim(), inputs[1].value.trim()];
+      });
+    }
+
+    function saveNewList() {
+      const name = listNameInput.value.trim();
+      const pairs = normalizeCustomPairs(collectEditorPairs());
+
+      if (!name) {
+        alert("Merci d'entrer un nom pour la liste.");
+        return;
+      }
+
+      if (getAllLists().some(list => list.name.toLowerCase() === name.toLowerCase())) {
+        alert("Une liste avec ce nom existe déjà.");
+        return;
+      }
+
+      if (pairs.length !== PAIR_COUNT) {
+        alert(`Merci de remplir exactement ${PAIR_COUNT} lignes.`);
+        return;
+      }
+
+      const newList = {
+        id: "custom-" + Date.now(),
+        name,
+        deletable: true,
+        pairs
+      };
+
+      customLists.push(newList);
+      saveCustomLists();
+      renderMenu();
+      startGameFromList(newList.id);
+      hideEditor();
+    }
+
+    function askDeleteList(listId) {
+      pendingDeleteId = listId;
+      deleteOverlay.classList.add("show");
+      closeMenu();
+    }
+
+    function confirmDeleteList() {
+      if (!pendingDeleteId) return;
+
+      const deletedWasCurrent = pendingDeleteId === currentListId;
+      customLists = customLists.filter(list => list.id !== pendingDeleteId);
+      saveCustomLists();
+      renderMenu();
+
+      if (deletedWasCurrent) {
+        startGameFromList("synonymes");
+      }
+
+      pendingDeleteId = null;
+      deleteOverlay.classList.remove("show");
+    }
+
+    function cancelDeleteList() {
+      pendingDeleteId = null;
+      deleteOverlay.classList.remove("show");
+    }
+
+    menuButton.addEventListener("click", toggleMenu);
+
+    document.addEventListener("click", (event) => {
+      const clickedInsideMenu = menu.contains(event.target);
+      const clickedMenuButton = menuButton.contains(event.target);
+      if (!clickedInsideMenu && !clickedMenuButton) {
+        closeMenu();
+      }
+    });
+
+    newListButton.addEventListener("click", openEditorWithCurrentPairs);
+    saveListButton.addEventListener("click", saveNewList);
+    cancelEditButton.addEventListener("click", hideEditor);
+    viewToggleButton.addEventListener("click", toggleExpandedView);
+
+    closeVictoryButton.addEventListener("click", () => {
+      victoryOverlay.classList.remove("show");
+      startGameFromList(currentListId);
+    });
+
+    confirmDeleteButton.addEventListener("click", confirmDeleteList);
+    cancelDeleteButton.addEventListener("click", cancelDeleteList);
+
+    updateViewToggleLabel();
+    renderMenu();
+    startGameFromList("synonymes");
+  </script>
+</body>
+</html>

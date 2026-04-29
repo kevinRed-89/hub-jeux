@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hub des jeux pédagogiques</title>
+  <style>
+    :root {
+      --bg1: #fff7ed;
+      --bg2: #eef6ff;
+      --primary: #2563eb;
+      --primary-dark: #1e40af;
+      --accent: #f97316;
+      --green: #16a34a;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --card: rgba(255,255,255,0.88);
+      --shadow: 0 18px 45px rgba(31, 41, 55, 0.15);
+      --radius: 26px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, #fde68a 0, transparent 32%),
+        radial-gradient(circle at bottom right, #bfdbfe 0, transparent 34%),
+        linear-gradient(135deg, var(--bg1), var(--bg2));
+    }
+
+    .page {
+      width: min(1200px, 94vw);
+      margin: 0 auto;
+      padding: 42px 0 50px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 34px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 16px;
+      border-radius: 999px;
+      background: white;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      color: var(--primary-dark);
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.3rem, 5vw, 4.2rem);
+      line-height: 1;
+      color: #172554;
+      letter-spacing: -1.5px;
+    }
+
+    .subtitle {
+      max-width: 760px;
+      margin: 18px auto 0;
+      font-size: clamp(1.05rem, 2vw, 1.35rem);
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(245px, 1fr));
+      gap: 22px;
+    }
+
+    .card {
+      position: relative;
+      overflow: hidden;
+      min-height: 235px;
+      padding: 24px 24px 58px;
+      border-radius: var(--radius);
+      background: var(--card);
+      box-shadow: var(--shadow);
+      text-decoration: none;
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.9);
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-6px) scale(1.015);
+      box-shadow: 0 24px 55px rgba(31, 41, 55, 0.22);
+    }
+
+    .card::after {
+      content: "";
+      position: absolute;
+      width: 160px;
+      height: 160px;
+      right: -45px;
+      bottom: -55px;
+      border-radius: 50%;
+      background: var(--bubble);
+      opacity: 0.22;
+    }
+
+    .icon {
+      width: 58px;
+      height: 58px;
+      display: grid;
+      place-items: center;
+      border-radius: 20px;
+      font-size: 2rem;
+      background: var(--bubble);
+      margin-bottom: 18px;
+    }
+
+    .card h2 {
+      margin: 0 0 8px;
+      font-size: 1.35rem;
+      color: #111827;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.4;
+      font-size: 0.98rem;
+    }
+
+    .open {
+      position: absolute;
+      left: 24px;
+      bottom: 24px;
+      font-weight: 800;
+      color: var(--primary);
+	  z-index: 2;
+    }
+
+    .blue { --bubble: #bfdbfe; }
+    .orange { --bubble: #fed7aa; }
+    .green { --bubble: #bbf7d0; }
+    .pink { --bubble: #fecdd3; }
+    .purple { --bubble: #ddd6fe; }
+    .yellow { --bubble: #fde68a; }
+    .cyan { --bubble: #a5f3fc; }
+    .red { --bubble: #fecaca; }
+
+    footer {
+      margin-top: 34px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 600px) {
+      .page {
+        padding-top: 26px;
+      }
+
+      .card {
+        min-height: 170px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div class="badge">🎒 Jeux pédagogiques CE1</div>
+      <h1>Mon hub de jeux</h1>
+      <p class="subtitle">
+        Une interface locale pour lancer rapidement les jeux de classe au vidéoprojecteur ou sur ordinateur.
+      </p>
+    </header>
+
+    <section class="grid">
+      <a class="card blue" href="Championnat%20de%20lecture/championnat_de_lecture.html">
+        <div class="icon">🏆</div>
+        <h2>Championnat de lecture</h2>
+        <p>Un jeu pour travailler la lecture avec rythme et motivation.</p>
+        <span class="open">Ouvrir →</span>
+      </a>
+
+      <a class="card orange" href="Flashcards/Flashcards.html">
+        <div class="icon">🃏</div>
+        <h2>Flashcards</h2>
+        <p>Des cartes rapides pour réviser, mémoriser ou automatiser.</p>
+        <span class="open">Ouvrir →</span>
+      </a>
+
+      <a class="card green" href="Memory/Memory.html">
+        <div class="icon">🧠</div>
+        <h2>Memory</h2>
+        <p>Associer des paires en jouant avec les mots et les notions.</p>
+        <span class="open">Ouvrir →</span>
+      </a>
+
+      <a class="card purple" href="Nature%20des%20mots/nature_des_mots.html">
+        <div class="icon">📚</div>
+        <h2>Nature des mots</h2>
+        <p>Identifier les mots selon leur nature grammaticale.</p>
+        <span class="open">Ouvrir →</span>
+      </a>
+
+      <a class="card yellow" href="Roue%20de%20la%20fortune/roue_de_la_fortune.html">
+        <div class="icon">🎡</div>
+        <h2>Roue de la fortune</h2>
+        <p>Une roue ludique pour tirer au sort mots, défis, nombres...</p>
+        <span class="open">Ouvrir →</span>
+      </a>
+
+      <a class="card pink" href="Trouve%20l'adjectif/trouve_l_adjectif.html">
+        <div class="icon">✨</div>
+        <h2>Trouve l’adjectif</h2>
+        <p>Repérer l’adjectif dans différentes positions de la phrase.</p>
+        <span class="open">Ouvrir →</span>
+      </a>
+
+      <a class="card cyan" href="Trouve%20le%20GN/trouve_le_groupe_nominal.html">
+        <div class="icon">🔎</div>
+        <h2>Trouve le GN</h2>
+        <p>Identifier le groupe nominal dans des phrases simples.</p>
+        <span class="open">Ouvrir →</span>
+      </a>
+
+      <a class="card red" href="Trouve%20le%20verbe/trouve_le_verbe.html">
+        <div class="icon">⚡</div>
+        <h2>Trouve le verbe</h2>
+        <p>Cliquer sur le verbe conjugué pour gagner des points.</p>
+        <span class="open">Ouvrir →</span>
+      </a>
+    </section>
+
+    <footer>
+      Interface locale — à placer à la racine des dossiers de jeux.
+    </footer>
+  </main>
+</body>
+</html>

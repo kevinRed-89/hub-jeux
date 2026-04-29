@@ -1,0 +1,764 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trouve l’adjectif</title>
+  <style>
+    :root{
+      --bg1:#eef4ff;
+      --bg2:#fff6ef;
+      --panel:#ffffff;
+      --text:#1f1f1f;
+      --accent:#4f46e5;
+      --accent-dark:#3730a3;
+      --good:#1f9d55;
+      --bad:#d64545;
+      --soft:#6b7280;
+      --shadow:0 14px 34px rgba(0,0,0,.12);
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
+      color:var(--text);
+      padding:24px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+    }
+
+    .app{
+      width:min(1400px, 100%);
+      background:var(--panel);
+      border-radius:32px;
+      box-shadow:var(--shadow);
+      padding:28px 28px 36px;
+    }
+
+    h1{
+      margin:0 0 10px;
+      text-align:center;
+      font-size:clamp(2rem, 3vw, 3rem);
+      color:var(--accent-dark);
+    }
+
+    .subtitle{
+      margin:0 0 22px;
+      text-align:center;
+      font-size:clamp(1rem, 1.5vw, 1.35rem);
+      color:#374151;
+    }
+
+    .topbar{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:center;
+      gap:16px;
+      margin-bottom:24px;
+    }
+
+    .btn{
+      border:none;
+      border-radius:18px;
+      padding:16px 24px;
+      font-size:clamp(1rem, 1.4vw, 1.3rem);
+      font-weight:700;
+      cursor:pointer;
+      box-shadow:0 6px 14px rgba(0,0,0,.10);
+      transition:transform .08s ease, background .2s ease, opacity .2s ease;
+    }
+
+    .btn:hover{ transform:translateY(-2px); }
+    .btn:active{ transform:translateY(0); }
+
+    .btn-primary{
+      background:var(--accent);
+      color:#fff;
+    }
+
+    .btn-primary:hover{
+      background:var(--accent-dark);
+    }
+
+    .btn-secondary{
+      background:#e5e7eb;
+      color:#111827;
+    }
+
+    .btn-secondary:hover{
+      background:#d1d5db;
+    }
+
+    .info{
+      margin:0 auto 28px;
+      width:min(1000px, 100%);
+      background:#f8fafc;
+      border-radius:22px;
+      padding:18px 22px;
+      text-align:center;
+      font-size:clamp(1.15rem, 1.7vw, 1.55rem);
+      line-height:1.5;
+      min-height:88px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow: inset 0 0 0 2px #e5e7eb;
+    }
+
+    .info.good{
+      background:#eefbf3;
+      box-shadow: inset 0 0 0 2px #b7ebcb;
+      color:#0f6b38;
+    }
+
+    .info.bad{
+      background:#fff1f1;
+      box-shadow: inset 0 0 0 2px #f2b8b8;
+      color:#a12626;
+    }
+
+    .game-area{
+      background:#fcfcff;
+      border-radius:28px;
+      padding:42px 28px;
+      min-height:320px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow: inset 0 0 0 3px #ececff;
+    }
+
+    .sentence{
+      text-align:center;
+      line-height:2.15;
+      font-size:clamp(2rem, 3.8vw, 4rem);
+      font-weight:700;
+    }
+
+    .word{
+      appearance:none;
+      border:none;
+      background:transparent;
+      color:inherit;
+      font:inherit;
+      padding:0 .04em;
+      margin:0;
+      border-radius:10px;
+      cursor:pointer;
+      display:inline;
+      transition:background .15s ease, color .15s ease;
+    }
+
+    .word:hover{
+      background:rgba(79,70,229,.10);
+    }
+
+    .word:active{
+      transform:none;
+    }
+
+    .word.wrong{
+      color:var(--bad);
+      background:rgba(214,69,69,.10);
+    }
+
+    .word.correct{
+      color:var(--good);
+      background:rgba(31,157,85,.12);
+    }
+
+    .word.disabled{
+      cursor:default;
+    }
+
+    .punct{
+      display:inline;
+    }
+
+    .legend{
+      margin-top:22px;
+      text-align:center;
+      color:#4b5563;
+      font-size:clamp(1rem, 1.35vw, 1.2rem);
+      line-height:1.5;
+    }
+
+    .bottomline{
+      margin-top:18px;
+      text-align:center;
+      font-size:clamp(1rem, 1.35vw, 1.15rem);
+      color:var(--soft);
+    }
+
+    .highlight{
+      font-weight:700;
+    }
+
+    .count{
+      font-weight:700;
+      color:#111827;
+    }
+
+    button:focus-visible{
+      outline:4px solid #f59e0b;
+      outline-offset:4px;
+    }
+
+    @media (max-width: 900px){
+      .app{
+        padding:20px 18px 26px;
+      }
+
+      .game-area{
+        padding:28px 14px;
+        min-height:240px;
+      }
+
+      .info{
+        min-height:78px;
+        padding:14px 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <h1>Trouve l’adjectif</h1>
+    <p class="subtitle">Lis la phrase. Clique sur l’adjectif.</p>
+
+    <div class="topbar">
+      <button id="newSentenceBtn" class="btn btn-primary">Nouvelle phrase</button>
+      <button id="showAnswerBtn" class="btn btn-secondary">Voir la réponse</button>
+    </div>
+
+    <div id="infoBox" class="info">
+      Trouve l’adjectif dans la phrase.
+    </div>
+
+    <section class="game-area">
+      <div id="sentence" class="sentence" aria-live="polite"></div>
+    </section>
+
+    <div class="legend">
+      Les mots sur lesquels on s'est trompé restent en <span class="highlight" style="color:#d64545;">rouge</span>.<br>
+      L’adjectif apparaît en <span class="highlight" style="color:#1f9d55;">vert</span> quand on le trouve ou quand on clique sur <span class="highlight">Voir la réponse</span>.
+    </div>
+
+    <div class="bottomline">
+      Nombre d'erreurs sur cette phrase : <span id="errorCount" class="count">0</span>
+    </div>
+  </main>
+
+  <script>
+    const sentenceEl = document.getElementById("sentence");
+    const infoBox = document.getElementById("infoBox");
+    const errorCountEl = document.getElementById("errorCount");
+    const newSentenceBtn = document.getElementById("newSentenceBtn");
+    const showAnswerBtn = document.getElementById("showAnswerBtn");
+
+    let currentRound = null;
+
+    function randomItem(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function makeSentenceFromParts(parts, adjectiveText) {
+      const tokens = [];
+      const adjectiveParts = adjectiveText.toLowerCase().split(" ");
+
+      parts.forEach((part, partIndex) => {
+        const words = part.split(" ");
+
+        words.forEach((word, wordIndex) => {
+          if (word.endsWith(",")) {
+            const cleanWord = word.slice(0, -1);
+
+            if (cleanWord) {
+              tokens.push({
+                type: "word",
+                text: cleanWord,
+                isAdjective: adjectiveParts.includes(cleanWord.toLowerCase())
+              });
+            }
+
+            tokens.push({
+              type: "punct",
+              text: ","
+            });
+          } else {
+            tokens.push({
+              type: "word",
+              text: word,
+              isAdjective: adjectiveParts.includes(word.toLowerCase())
+            });
+          }
+
+          if (wordIndex < words.length - 1) {
+            tokens.push({ type: "space", text: " " });
+          }
+        });
+
+        if (partIndex < parts.length - 1) {
+          tokens.push({ type: "space", text: " " });
+        }
+      });
+
+      tokens.push({ type: "punct", text: "." });
+
+      return tokens;
+    }
+
+    function buildPattern1() {
+      // Adjectif dans le groupe nominal sujet.
+      // Les sujets vivants et non vivants sont séparés pour garder des phrases cohérentes.
+      const livingSubjects = [
+        { text: "Le chien noir", adjective: "noir" },
+        { text: "Le chat blanc", adjective: "blanc" },
+        { text: "Le petit lapin", adjective: "petit" },
+        { text: "La grande fille", adjective: "grande" },
+        { text: "La jeune maîtresse", adjective: "jeune" },
+        { text: "Le vieux monsieur", adjective: "vieux" },
+        { text: "Une petite élève", adjective: "petite" },
+        { text: "Le garçon rapide", adjective: "rapide" },
+        { text: "La fillette joyeuse", adjective: "joyeuse" },
+        { text: "Le bébé fatigué", adjective: "fatigué" }
+      ];
+
+      const nonLivingSubjects = [
+        { text: "Le vieux vélo", adjective: "vieux" },
+        { text: "Le ballon rouge", adjective: "rouge" },
+        { text: "La porte bleue", adjective: "bleue" },
+        { text: "Le sac lourd", adjective: "lourd" },
+        { text: "La jolie fleur", adjective: "jolie" },
+        { text: "La petite balle", adjective: "petite" },
+        { text: "Le grand livre", adjective: "grand" },
+        { text: "La trousse verte", adjective: "verte" },
+        { text: "Le cahier neuf", adjective: "neuf" },
+        { text: "La chaise cassée", adjective: "cassée" }
+      ];
+
+      const livingVerbs = [
+        "saute",
+        "court",
+        "marche",
+        "joue",
+        "avance",
+        "recule",
+        "grimpe",
+        "trottine",
+        "arrive",
+        "attend"
+      ];
+
+      const nonLivingVerbs = [
+        "tombe",
+        "roule",
+        "brille",
+        "reste",
+        "tourne",
+        "glisse",
+        "bouge",
+        "flotte",
+        "penche",
+        "tremble"
+      ];
+
+      const places = [
+        "dans la cour",
+        "dans la classe",
+        "sur le tapis",
+        "près du mur",
+        "dans le jardin",
+        "à l'école"
+      ];
+
+      const useLivingSubject = Math.random() < 0.6;
+      const subject = useLivingSubject ? randomItem(livingSubjects) : randomItem(nonLivingSubjects);
+      const verb = useLivingSubject ? randomItem(livingVerbs) : randomItem(nonLivingVerbs);
+      const place = randomItem(places);
+
+      return makeSentenceFromParts([subject.text, verb, place], subject.adjective);
+    }
+
+    function buildPattern2() {
+      // Adjectif dans le COD. Les sujets font des actions volontaires : ils sont donc vivants.
+      const subjects = [
+        "Tom",
+        "Léa",
+        "Le garçon",
+        "La fille",
+        "La maîtresse",
+        "Maman",
+        "Papa",
+        "Le voisin"
+      ];
+
+      const verbs = [
+        "regarde",
+        "cherche",
+        "trouve",
+        "porte",
+        "montre",
+        "attrape",
+        "prend",
+        "cache",
+        "ramasse",
+        "range"
+      ];
+
+      const objects = [
+        { text: "un beau stylo", adjective: "beau" },
+        { text: "une petite balle", adjective: "petite" },
+        { text: "un grand livre", adjective: "grand" },
+        { text: "une boîte rouge", adjective: "rouge" },
+        { text: "un ballon bleu", adjective: "bleu" },
+        { text: "une jolie carte", adjective: "jolie" },
+        { text: "un vieux sac", adjective: "vieux" },
+        { text: "une trousse verte", adjective: "verte" },
+        { text: "un jouet cassé", adjective: "cassé" },
+        { text: "une chaise légère", adjective: "légère" }
+      ];
+
+      const subject = randomItem(subjects);
+      const verb = randomItem(verbs);
+      const object = randomItem(objects);
+
+      return makeSentenceFromParts([subject, verb, object.text], object.adjective);
+    }
+
+    function buildPattern3() {
+      // Adjectif dans le COI. Les couples sujet/verbe sont préparés ensemble pour éviter les accords incorrects.
+      const subjectVerbs = [
+        { subject: "Tu", verb: "parles", complements: [
+          { text: "de la maison verte", adjective: "verte" },
+          { text: "du grand château", adjective: "grand" },
+          { text: "au petit chien", adjective: "petit" }
+        ]},
+        { subject: "Je", verb: "parle", complements: [
+          { text: "de la maison verte", adjective: "verte" },
+          { text: "du vieux moulin", adjective: "vieux" },
+          { text: "à la nouvelle élève", adjective: "nouvelle" }
+        ]},
+        { subject: "Tom", verb: "discute", complements: [
+          { text: "avec la nouvelle élève", adjective: "nouvelle" },
+          { text: "avec son jeune frère", adjective: "jeune" },
+          { text: "de la grande feuille", adjective: "grande" }
+        ]},
+        { subject: "Léa", verb: "sourit", complements: [
+          { text: "à la jolie fille", adjective: "jolie" },
+          { text: "au petit garçon", adjective: "petit" },
+          { text: "à la vieille dame", adjective: "vieille" }
+        ]},
+        { subject: "Le garçon", verb: "joue", complements: [
+          { text: "avec le ballon rouge", adjective: "rouge" },
+          { text: "avec la petite balle", adjective: "petite" },
+          { text: "avec le camion bleu", adjective: "bleu" }
+        ]},
+        { subject: "La maîtresse", verb: "écrit", complements: [
+          { text: "sur une grande feuille", adjective: "grande" },
+          { text: "sur le tableau blanc", adjective: "blanc" },
+          { text: "avec un feutre noir", adjective: "noir" }
+        ]}
+      ];
+
+      const choice = randomItem(subjectVerbs);
+      const complement = randomItem(choice.complements);
+
+      return makeSentenceFromParts([choice.subject, choice.verb, complement.text], complement.adjective);
+    }
+
+    function buildPattern4() {
+      // Attribut du sujet. Les sujets et les adjectifs compatibles sont associés.
+      const subjectAdjectives = [
+        { subject: "Luc", adjectives: ["maladroit", "fatigué", "calme", "sage", "rapide"] },
+        { subject: "Léa", adjectives: ["heureuse", "fatiguée", "calme", "sage", "fière"] },
+        { subject: "Tom", adjectives: ["maladroit", "fatigué", "calme", "sage", "rapide"] },
+        { subject: "Le chat", adjectives: ["calme", "sage", "rapide", "fatigué", "curieux"] },
+        { subject: "Le chien", adjectives: ["calme", "sage", "rapide", "fatigué", "joyeux"] },
+        { subject: "La maîtresse", adjectives: ["gentille", "calme", "heureuse", "fatiguée", "fière"] },
+        { subject: "Le garçon", adjectives: ["maladroit", "fatigué", "calme", "sage", "rapide"] },
+        { subject: "La fille", adjectives: ["heureuse", "fatiguée", "calme", "sage", "fière"] },
+        { subject: "Mon cartable", adjectives: ["lourd", "neuf", "ouvert", "propre", "rouge"] },
+        { subject: "Cette histoire", adjectives: ["drôle", "longue", "courte", "amusante", "belle"] }
+      ];
+
+      const choice = randomItem(subjectAdjectives);
+      const adjective = randomItem(choice.adjectives);
+
+      return makeSentenceFromParts([choice.subject, "est", adjective], adjective);
+    }
+
+    function buildPattern5() {
+      // Phrase avec un groupe placé au début et un adjectif dans le sujet.
+      // Les sujets vivants gardent des verbes d'action volontaire ; les non vivants gardent des verbes adaptés.
+      const starters = [
+        "Dans la cour,",
+        "Dans la classe,",
+        "Ce matin,",
+        "À l'école,",
+        "Sur le tapis,"
+      ];
+
+      const livingSubjects = [
+        { text: "un petit garçon", adjective: "petit" },
+        { text: "une grande fille", adjective: "grande" },
+        { text: "le chat gris", adjective: "gris" },
+        { text: "le chien noir", adjective: "noir" },
+        { text: "une jeune élève", adjective: "jeune" },
+        { text: "un vieux monsieur", adjective: "vieux" },
+        { text: "la maîtresse gentille", adjective: "gentille" },
+        { text: "un lapin blanc", adjective: "blanc" }
+      ];
+
+      const nonLivingSubjects = [
+        { text: "le ballon jaune", adjective: "jaune" },
+        { text: "la porte ouverte", adjective: "ouverte" },
+        { text: "la petite balle", adjective: "petite" },
+        { text: "le vieux vélo", adjective: "vieux" },
+        { text: "la feuille légère", adjective: "légère" },
+        { text: "le rideau bleu", adjective: "bleu" },
+        { text: "la lampe rouge", adjective: "rouge" },
+        { text: "le cahier neuf", adjective: "neuf" }
+      ];
+
+      const livingVerbs = [
+        "regarde",
+        "cherche",
+        "trouve",
+        "porte",
+        "montre",
+        "attrape",
+        "prend",
+        "cache",
+        "ramasse",
+        "range"
+      ];
+
+      const nonLivingVerbs = [
+        "tombe",
+        "roule",
+        "glisse",
+        "reste",
+        "tourne",
+        "brille",
+        "bouge",
+        "repose",
+        "est posé",
+        "attend"
+      ];
+
+      const objects = [
+        "la balle",
+        "le livre",
+        "la trousse",
+        "la porte",
+        "la boîte",
+        "le ballon",
+        "la chaise",
+        "la table"
+      ];
+
+      const places = [
+        "dans la cour",
+        "sur le sol",
+        "sur le tapis",
+        "près du mur",
+        "dans le jardin",
+        "à l'école"
+      ];
+
+      const starter = randomItem(starters);
+      const useLivingSubject = Math.random() < 0.6;
+      const subject = useLivingSubject ? randomItem(livingSubjects) : randomItem(nonLivingSubjects);
+      const verb = useLivingSubject ? randomItem(livingVerbs) : randomItem(nonLivingVerbs);
+
+      if (useLivingSubject) {
+        const object = randomItem(objects);
+        return makeSentenceFromParts([starter, subject.text, verb, object], subject.adjective);
+      }
+
+      const place = randomItem(places);
+      return makeSentenceFromParts([starter, subject.text, verb, place], subject.adjective);
+    }
+
+    function buildPattern6() {
+      // Adjectif dans le COD avec un sujet plus long. Les sujets sont vivants car ils agissent sur un objet.
+      const subjects = [
+        "Le maire de la ville",
+        "Le directeur de l'école",
+        "Le gardien du parc",
+        "La dame de la ferme",
+        "Le voisin de Tom",
+        "La maman de Léa"
+      ];
+
+      const verbs = [
+        "pousse",
+        "porte",
+        "montre",
+        "cherche",
+        "regarde",
+        "touche",
+        "prend",
+        "cache",
+        "ramasse",
+        "ouvre",
+        "ferme",
+        "dépose"
+      ];
+
+      const objects = [
+        { text: "la petite porte", adjective: "petite" },
+        { text: "la boîte bleue", adjective: "bleue" },
+        { text: "le ballon rond", adjective: "rond" },
+        { text: "le livre neuf", adjective: "neuf" },
+        { text: "la table basse", adjective: "basse" },
+        { text: "la chaise cassée", adjective: "cassée" },
+        { text: "le grand panier", adjective: "grand" },
+        { text: "la longue corde", adjective: "longue" }
+      ];
+
+      const subject = randomItem(subjects);
+      const verb = randomItem(verbs);
+      const object = randomItem(objects);
+
+      return makeSentenceFromParts([subject, verb, object.text], object.adjective);
+    }
+
+    const builders = [
+      buildPattern1,
+      buildPattern2,
+      buildPattern3,
+      buildPattern4,
+      buildPattern5,
+      buildPattern6
+    ];
+
+    function generateRound() {
+      const builder = randomItem(builders);
+      const tokens = builder();
+
+      currentRound = {
+        tokens,
+        solved: false,
+        answerShown: false,
+        wrongIndexes: new Set(),
+        correctIndexes: new Set(),
+        errorCount: 0
+      };
+
+      updateInfo("Trouve l'adjectif dans la phrase.", "");
+      updateErrorCount();
+      renderSentence();
+    }
+
+    function updateInfo(message, type) {
+      infoBox.textContent = message;
+      infoBox.classList.remove("good", "bad");
+
+      if (type === "good") {
+        infoBox.classList.add("good");
+      } else if (type === "bad") {
+        infoBox.classList.add("bad");
+      }
+    }
+
+    function updateErrorCount() {
+      errorCountEl.textContent = currentRound.errorCount;
+    }
+
+    function renderSentence() {
+      sentenceEl.innerHTML = "";
+
+      currentRound.tokens.forEach((token, index) => {
+        if (token.type === "word") {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "word";
+          btn.textContent = token.text;
+          btn.setAttribute("aria-label", token.text);
+
+          if (currentRound.wrongIndexes.has(index)) {
+            btn.classList.add("wrong");
+          }
+
+          if (currentRound.correctIndexes.has(index)) {
+            btn.classList.add("correct");
+          }
+
+          if (currentRound.solved || currentRound.answerShown) {
+            btn.classList.add("disabled");
+          }
+
+          btn.addEventListener("click", () => handleWordClick(index));
+          sentenceEl.appendChild(btn);
+
+        } else if (token.type === "punct") {
+          const span = document.createElement("span");
+          span.className = "punct";
+          span.textContent = token.text;
+          sentenceEl.appendChild(span);
+
+        } else if (token.type === "space") {
+          sentenceEl.appendChild(document.createTextNode(" "));
+        }
+      });
+    }
+
+    function handleWordClick(index) {
+      if (currentRound.solved || currentRound.answerShown) {
+        return;
+      }
+
+      const token = currentRound.tokens[index];
+      if (!token || token.type !== "word") {
+        return;
+      }
+
+      if (token.isAdjective) {
+        currentRound.correctIndexes.add(index);
+        currentRound.solved = true;
+        updateInfo(`Bravo ! "${token.text}" est l'adjectif.`, "good");
+      } else {
+        if (!currentRound.wrongIndexes.has(index)) {
+          currentRound.wrongIndexes.add(index);
+          currentRound.errorCount += 1;
+          updateErrorCount();
+        }
+        updateInfo(`"${token.text}" n'est pas l'adjectif. Continue.`, "bad");
+      }
+
+      renderSentence();
+    }
+
+    function showAnswer() {
+      if (!currentRound) return;
+
+      currentRound.answerShown = true;
+
+      currentRound.tokens.forEach((token, index) => {
+        if (token.type === "word" && token.isAdjective) {
+          currentRound.correctIndexes.add(index);
+        }
+      });
+
+      const adjectives = currentRound.tokens
+        .filter(token => token.type === "word" && token.isAdjective)
+        .map(token => token.text);
+
+      updateInfo(`La réponse est : "${adjectives.join(" ")}".`, "good");
+      renderSentence();
+    }
+
+    newSentenceBtn.addEventListener("click", generateRound);
+    showAnswerBtn.addEventListener("click", showAnswer);
+
+    generateRound();
+  </script>
+</body>
+</html>
