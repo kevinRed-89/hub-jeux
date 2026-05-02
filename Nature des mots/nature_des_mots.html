@@ -712,8 +712,8 @@
       const checked = [...document.querySelectorAll('#natureOptions input:checked')].map(el => el.dataset.key);
       state.selectedCategories = checked;
 
-      if (checked.length === 0) {
-        setupFeedback.textContent = 'Choisis au moins une nature pour démarrer.';
+      if (checked.length < 2) {
+        setupFeedback.textContent = 'Choisis au moins deux natures pour démarrer.';
         setupFeedback.className = 'feedback error';
       } else {
         setupFeedback.textContent = checked.length === categories.length
