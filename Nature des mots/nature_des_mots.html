@@ -882,8 +882,8 @@
     }
 
     function startGame() {
-      if (state.selectedCategories.length === 0) {
-        setupFeedback.textContent = 'Choisis au moins une nature pour démarrer.';
+      if (state.selectedCategories.length < 2) {
+        setupFeedback.textContent = 'Choisis au moins deux natures pour démarrer.';
         setupFeedback.className = 'feedback error';
         return;
       }
