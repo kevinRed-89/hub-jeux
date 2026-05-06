@@ -1,1 +1,10 @@
-un artiste, une salle, une craie, une aile, un aigle, un essai, une fraise, un habitant, un artisan, un plan, une ampoule, une main, un copain, du levain, vilain, une autruche, une auto, un marteau
+Adam attrape un chat.,
+Un panda mange une banane.,
+Maman ramasse un gâteau.,
+Le lapin fait un dais.,
+Un nain peint un train.,
+Paul saute dans l’eau.,
+Une vache va au pré.,
+Le bateau va au port.,
+L’oiseau chante au matin.,
+La main lave la tasse.,
