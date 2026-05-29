@@ -1,1 +1,10 @@
-une haie, un hérisson, la hanche, la pêche, des déchets, un champignon, un marché, un anchois, une chance, un choix, un chamois, un phare, un téléphone, une photo, un phoque, un autographe, un dauphin, un thème, des maths, un rythme, la menthe
+Le robot dort.,
+Le poisson nage.,
+La poule court.,
+Le mouton mange.,
+Le lion rugit.,
+Le camion roule.,
+Tom tombe.,
+Le bonbon colle.,
+Je vois une maison.,
+Je lance une pièce dans le coin.
