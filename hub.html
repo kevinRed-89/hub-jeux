@@ -76,7 +76,7 @@
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(245px, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 22px;
     }
 
@@ -152,6 +152,7 @@
     .yellow { --bubble: #fde68a; }
     .cyan { --bubble: #a5f3fc; }
     .red { --bubble: #fecaca; }
+    .teal { --bubble: #99f6e4; }
 
     footer {
       margin-top: 34px;
@@ -160,7 +161,17 @@
       font-size: 0.95rem;
     }
 
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
     @media (max-width: 600px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
       .page {
         padding-top: 26px;
       }
@@ -235,6 +246,13 @@
         <div class="icon">⚡</div>
         <h2>Trouve le verbe</h2>
         <p>Cliquer sur le verbe conjugué pour gagner des points.</p>
+        <span class="open">Ouvrir →</span>
+      </a>
+
+      <a class="card teal" href="Niveaux%20de%20langue/niveaux_de_langue.html">
+        <div class="icon">💬</div>
+        <h2>Niveaux de langue</h2>
+        <p>Associer des phrases au langage familier, courant ou soutenu.</p>
         <span class="open">Ouvrir →</span>
       </a>
     </section>
