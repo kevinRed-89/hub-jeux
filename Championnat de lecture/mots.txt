@@ -1,1 +1,10 @@
-un changement, un chemin, une école, une période, une température, un glacier, un évier, un danger, aller, passer, marcher, un pied, vous allez, vous trouvez, une espèce, une planète, une bête, une gêne, un sujet, un effet, un objet, une veine, un peigne, pleine
+Le nez de Zoé est bleu.,
+La neige tombe.,
+Le seau est plein.,
+Le chien suit Léo.,
+Mon pied touche l’eau.,
+Le bœuf broute.,
+Je fais un jeu de dés.,
+Deux feux brillent.,
+Je compte jusqu’à seize.,
+Le cœur bat.
