@@ -1,10 +1,1 @@
-Le nez de Zoé est bleu.,
-La neige tombe.,
-Le seau est plein.,
-Le chien suit Léo.,
-Mon pied touche l’eau.,
-Le bœuf broute.,
-Je fais un jeu de dés.,
-Deux feux brillent.,
-Je compte jusqu’à seize.,
-Le cœur bat.
+res -> rester, rec -> rectangle, ver -> vertèbre, per -> permis, mer -> mercredi, nef -> aéronef, cep -> réception, ex -> extrait, mel -> caramel, tex -> texto, quel -> quelque, sep -> septembre
